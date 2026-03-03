@@ -9,6 +9,7 @@ import ru.practicum.messages.Messages;
 import ru.practicum.config.KafkaConfig;
 import ru.practicum.model.hub.HubEvent;
 import ru.practicum.service.handler.KafkaEventProducer;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -20,20 +21,33 @@ public abstract class BaseHubHandler implements HubEventHandler {
     public BaseHubHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         this.producer = kafkaProducer;
         topic = kafkaConfig.getTopics().get("hubs-events");
+        if (topic == null) {
+            throw new IllegalArgumentException(Messages.ERROR_NOT_TOPIC_HUB);
+        }
     }
 
     @Override
     public void handle(HubEvent hubEvent) {
         try {
+            SpecificRecordBase payload = mapToAvro(hubEvent);
+
+            HubEventAvro avroEvent = HubEventAvro.newBuilder()
+                    .setHubId(hubEvent.getHubId())
+                    .setTimestamp(hubEvent.getTimestamp())
+                    .setPayload(payload)
+                    .build();
+
             ProducerRecord<String, SpecificRecordBase> record =
                     new ProducerRecord<>(
                             topic,
                             null,
-                            System.currentTimeMillis(),
+                            hubEvent.getTimestamp().toEpochMilli(),
                             hubEvent.getHubId(),
-                            mapToAvro(hubEvent)
+                            avroEvent
                     );
             producer.sendRecord(record);
+            log.debug(Messages.MESSAGE_SEND, hubEvent.getHubId());
+
         } catch (Exception e) {
             log.error(Messages.ERROR_EVENT_KAFKA, hubEvent, e);
             throw new RuntimeException(Messages.ERROR_SEND_MESSAGE, e);

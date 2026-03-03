@@ -14,10 +14,10 @@ import ru.practicum.model.hub.enums.HubEventType;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScenarioRemovedEvent extends HubEvent {
     @NotBlank
-    String id;
+    String name;
 
     @Override
     public HubEventType getType() {
-        return HubEventType.DEVICE_REMOVED;
+        return HubEventType.SCENARIO_REMOVED;
     }
 }

@@ -34,8 +34,10 @@ import java.time.Instant;
 public abstract class SensorEvent {
     @NotBlank
     String id;
+
     @NotBlank
     String hubId;
+
     Instant timestamp = Instant.now();
 
     @NotNull

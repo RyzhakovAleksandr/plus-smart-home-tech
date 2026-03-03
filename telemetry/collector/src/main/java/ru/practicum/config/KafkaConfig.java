@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 import ru.practicum.messages.Messages;
 
 import java.util.Map;
@@ -20,8 +20,8 @@ import java.util.Properties;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Configuration
 @ConfigurationProperties("collector.kafka")
-@Component
 public class KafkaConfig {
     Map<String, String> topics;
     Map<String, String> producerProperties;
@@ -32,7 +32,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public Properties getKafkaProperties() {
+    public Properties kafkaProperties() {
         Properties properties = new Properties();
         properties.putAll(producerProperties);
         return properties;

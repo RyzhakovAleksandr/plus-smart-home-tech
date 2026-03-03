@@ -28,7 +28,7 @@ public class KafkaEventProducer {
     private Producer<String, SpecificRecordBase> producer;
 
     public KafkaEventProducer(KafkaConfig kafkaConfig) {
-        Properties properties = kafkaConfig.getKafkaProperties();
+        Properties properties = kafkaConfig.kafkaProperties();
         log.info(Messages.PRODUCER_INITIAL_SETTINGS, properties);
         this.producer = new KafkaProducer<>(properties);
     }

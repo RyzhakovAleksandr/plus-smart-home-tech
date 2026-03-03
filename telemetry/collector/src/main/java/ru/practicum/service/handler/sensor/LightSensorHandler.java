@@ -22,9 +22,10 @@ public class LightSensorHandler extends BaseSensorHandler {
     @Override
     public LightSensorAvro mapToAvro(SensorEvent sensorEvent) {
         LightSensorEvent lightSensorEvent = (LightSensorEvent) sensorEvent;
+
         return LightSensorAvro.newBuilder()
-                .setLinkQuality(lightSensorEvent.getLinkQuality())
-                .setLuminosity(lightSensorEvent.getLuminosity())
+                .setLinkQuality(lightSensorEvent.getLinkQuality() != null ? lightSensorEvent.getLinkQuality() : 0)
+                .setLuminosity(lightSensorEvent.getLuminosity() != null ? lightSensorEvent.getLuminosity() : 0)
                 .build();
     }
 }

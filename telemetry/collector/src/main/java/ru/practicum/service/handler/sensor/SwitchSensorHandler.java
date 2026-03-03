@@ -21,8 +21,9 @@ public class SwitchSensorHandler extends BaseSensorHandler {
     @Override
     public SwitchSensorAvro mapToAvro(SensorEvent sensorEvent) {
         SwitchSensorEvent switchSensorEvent = (SwitchSensorEvent) sensorEvent;
+
         return SwitchSensorAvro.newBuilder()
-                .setState(switchSensorEvent.getIsState())
+                .setState(Boolean.TRUE.equals(switchSensorEvent.getState()))
                 .build();
     }
 }
