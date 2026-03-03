@@ -11,7 +11,7 @@ import ru.practicum.model.sensor.enums.SensorEventType;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ClimateSensorEvent extends SensorEvent{
+public class ClimateSensorEvent extends SensorEvent {
     Integer temperatureC;
     Integer humidity;
     Integer co2Level;

@@ -15,13 +15,13 @@ import java.util.List;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ScenarioAddedEvent extends HubEvent{
+public class ScenarioAddedEvent extends HubEvent {
     @NotBlank
     String name;
 
     @NotEmpty
     List<ScenarioCondition> conditions;
-    List<DeviceAction>	actions;
+    List<DeviceAction> actions;
 
     @Override
     public HubEventType getType() {

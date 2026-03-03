@@ -11,7 +11,7 @@ import ru.practicum.model.sensor.enums.SensorEventType;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MotionSensorEvent extends SensorEvent{
+public class MotionSensorEvent extends SensorEvent {
     Integer linkQuality;
     Boolean isMotion;
     Integer voltage;

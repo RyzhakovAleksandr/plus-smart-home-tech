@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import ru.practicum.Messages;
+import ru.practicum.messages.Messages;
 
 import java.util.Map;
 import java.util.Properties;

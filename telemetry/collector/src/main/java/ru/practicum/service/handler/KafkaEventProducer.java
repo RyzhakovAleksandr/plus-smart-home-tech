@@ -11,7 +11,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Component;
-import ru.practicum.Messages;
+import ru.practicum.messages.Messages;
 import ru.practicum.config.KafkaConfig;
 
 import java.time.Duration;

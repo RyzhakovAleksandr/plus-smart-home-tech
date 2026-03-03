@@ -11,7 +11,7 @@ import ru.practicum.model.sensor.enums.SensorEventType;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LightSensorEvent extends SensorEvent{
+public class LightSensorEvent extends SensorEvent {
     Integer linkQuality;
     Integer luminosity;
 

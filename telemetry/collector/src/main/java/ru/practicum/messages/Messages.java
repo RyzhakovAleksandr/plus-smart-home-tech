@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.messages;
 
 public class Messages {
     //log

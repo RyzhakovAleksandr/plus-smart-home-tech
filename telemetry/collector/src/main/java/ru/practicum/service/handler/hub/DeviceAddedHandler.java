@@ -11,7 +11,7 @@ import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
 
 @Component
-public class DeviceAddedHandler extends BaseHubHandler{
+public class DeviceAddedHandler extends BaseHubHandler {
 
     public DeviceAddedHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         super(kafkaProducer, kafkaConfig);

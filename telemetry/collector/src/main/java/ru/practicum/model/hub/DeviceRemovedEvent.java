@@ -12,7 +12,7 @@ import ru.practicum.model.hub.enums.HubEventType;
 @Setter
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DeviceRemovedEvent extends HubEvent{
+public class DeviceRemovedEvent extends HubEvent {
     @NotBlank
     String id;
 

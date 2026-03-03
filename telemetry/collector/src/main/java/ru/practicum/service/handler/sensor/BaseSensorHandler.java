@@ -1,44 +1,43 @@
-package ru.practicum.service.handler.hub;
+package ru.practicum.service.handler.sensor;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import ru.practicum.messages.Messages;
 import ru.practicum.config.KafkaConfig;
-import ru.practicum.model.hub.HubEvent;
+import ru.practicum.messages.Messages;
+import ru.practicum.model.sensor.SensorEvent;
 import ru.practicum.service.handler.KafkaEventProducer;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public abstract class BaseHubHandler implements HubEventHandler {
-
+public abstract class BaseSensorHandler implements SensorEventHandler {
     KafkaEventProducer producer;
     String topic;
 
-    public BaseHubHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
+    public BaseSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
         this.producer = kafkaProducer;
-        topic = kafkaConfig.getTopics().get("hubs-events");
+        topic = kafkaConfig.getTopics().get("sensors-events");
     }
 
     @Override
-    public void handle(HubEvent hubEvent) {
+    public void handle(SensorEvent sensorEvent) {
         try {
             ProducerRecord<String, SpecificRecordBase> record =
                     new ProducerRecord<>(
                             topic,
                             null,
                             System.currentTimeMillis(),
-                            hubEvent.getHubId(),
-                            mapToAvro(hubEvent)
+                            sensorEvent.getHubId(),
+                            mapToAvro(sensorEvent)
                     );
             producer.sendRecord(record);
         } catch (Exception e) {
-            log.error(Messages.ERROR_EVENT_KAFKA, hubEvent, e);
+            log.error(Messages.ERROR_EVENT_KAFKA, sensorEvent, e);
             throw new RuntimeException(Messages.ERROR_SEND_MESSAGE, e);
         }
     }
 
-    abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
+    abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
 }
