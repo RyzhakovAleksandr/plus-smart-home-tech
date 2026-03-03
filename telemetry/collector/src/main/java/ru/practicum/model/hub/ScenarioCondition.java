@@ -16,7 +16,7 @@ import ru.practicum.model.hub.enums.ConditionType;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScenarioCondition {
     @NotBlank
-    String sensor_id;
+    String sensorId;
 
     @NotNull
     ConditionType type;

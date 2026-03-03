@@ -15,7 +15,7 @@ import ru.practicum.model.hub.enums.ActionType;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DeviceAction {
     @NotBlank
-    String sensor_id;
+    String sensorId;
 
     @NotNull
     ActionType type;
