@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(path = "/events", consumes = MediaType.APPLICATION_JSON_VALUE)
 public class EventController {
+
+    public static final String ENDPOINT_HUBS = "/hubs";
+    public static final String ENDPOINT_SENSORS = "/sensors";
+
     private final Map<HubEventType, HubEventHandler> hubEventHandlersMap;
     private final Map<SensorEventType, SensorEventHandler> sensorEventHandlersMap;
 
@@ -36,7 +40,7 @@ public class EventController {
                 .collect(Collectors.toMap(SensorEventHandler::getMessageType, Function.identity()));
     }
 
-    @PostMapping("/hubs")
+    @PostMapping(ENDPOINT_HUBS)
     public void collectHubEvent(@Valid @RequestBody HubEvent hub) {
         log.info(Messages.HUB_EVENT, hub.getType());
         if (hubEventHandlersMap.containsKey(hub.getType())) {
@@ -48,7 +52,7 @@ public class EventController {
         }
     }
 
-    @PostMapping("/sensors")
+    @PostMapping(ENDPOINT_SENSORS)
     public void collectSensorEvent(@Valid @RequestBody SensorEvent sensor) {
         log.info(Messages.SENSOR_EVENT, sensor.getType());
         if (sensorEventHandlersMap.containsKey(sensor.getType())) {
