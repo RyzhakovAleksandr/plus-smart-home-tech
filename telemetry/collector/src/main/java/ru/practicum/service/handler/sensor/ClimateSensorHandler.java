@@ -4,33 +4,36 @@ import org.springframework.stereotype.Component;
 import ru.practicum.config.KafkaConfig;
 import ru.practicum.model.sensor.ClimateSensorEvent;
 import ru.practicum.model.sensor.SensorEvent;
-import ru.practicum.model.sensor.enums.SensorEventType;
 import ru.practicum.service.handler.KafkaEventProducer;
+import ru.practicum.service.mapper.sensor.SensorEventAvroMapper;
+import ru.practicum.service.mapper.sensor.SensorEventProtoMapper;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 @Component
 public class ClimateSensorHandler extends BaseSensorHandler {
-    public ClimateSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        super(kafkaProducer, kafkaConfig);
+    public ClimateSensorHandler(KafkaEventProducer kafkaProducer,
+                                KafkaConfig kafkaConfig,
+                                SensorEventAvroMapper avroMapper,
+                                SensorEventProtoMapper protoMapper) {
+        super(kafkaProducer, kafkaConfig, avroMapper, protoMapper);
     }
 
     @Override
-    public SensorEventType getMessageType() {
-        return SensorEventType.CLIMATE_SENSOR_EVENT;
+    public SensorEventProto.PayloadCase getMessageSensorType() {
+        return SensorEventProto.PayloadCase.CLIMATE_SENSOR;
     }
 
     @Override
-    public ClimateSensorAvro mapToAvro(SensorEvent sensorEvent) {
-        ClimateSensorEvent climateSensorEvent = (ClimateSensorEvent) sensorEvent;
+    protected SensorEventAvro mapSensorEventToAvro(SensorEvent sensorEvent) {
+        ClimateSensorAvro avro = avroMapper.mapClimateSensorToAvro((ClimateSensorEvent) sensorEvent);
+        return buildSensorEventAvro(sensorEvent, avro);
+    }
 
-        Integer tempC = climateSensorEvent.getTemperatureC();
-        Integer hum = climateSensorEvent.getHumidity();
-        Integer co2 = climateSensorEvent.getCo2Level();
-
-        return ClimateSensorAvro.newBuilder()
-                .setTemperatureC(tempC != null ? tempC : 0)
-                .setHumidity(hum != null ? hum : 0)
-                .setCo2Level(co2 != null ? co2 : 0)
-                .build();
+    @Override
+    protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
+        ClimateSensorEvent sensor = protoMapper.mapClimateSensorProtoToModel(sensorProto.getClimateSensor());
+        return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }

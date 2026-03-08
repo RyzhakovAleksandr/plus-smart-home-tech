@@ -2,16 +2,16 @@ package ru.practicum.messages;
 
 public class Messages {
     //log
-    public static final String HUB_EVENT = "Получено HUBS событие типа: {}";
-    public static final String HUB_EVENT_OK = "HUBS событие успешно обработано";
+    public static final String HUB_EVENT_SENT = "Hub событие отправлено в Kafka. hubId={}, topic={}";
     public static final String HUB_EVENT_NOT_FOUND = "HUB обработчик не найден для типа: {}";
-    public static final String SENSOR_EVENT = "Получено SENSOR событие типа: {}";
-    public static final String SENSOR_EVENT_OK = "SENSOR событие успешно обработано";
-    public static final String SENSOR_EVENT_NOT_FOUND = "SENSOR обработчик не найден для типа: {}";
+    public static final String HUB_MAP = "маппинг в данные HUB с индификатором={}";
+    public static final String HUB_MAP_TO_AVRO = "маппинг в AVRO данные HUB с индификатором={}";
+    public static final String SENSOR_EVENT_SENT = "Сенсор событие отправлено в Kafka. sensorId={}, topic={}";
+    public static final String SENSOR_MAP = "маппинг в данные SENSOR с индификатором={}";
+    public static final String SENSOR_MAP_TO_AVRO = "маппинг в AVRO данные SENSOR с индификатором={}";
     public static final String KAFKA_INITIAL = "Инициализация KafkaConfig: {}";
     public static final String PRODUCER_INITIAL_SETTINGS = "Инициализация KafkaProducer с настройками: {}";
     public static final String PRODUCER_MESSAGE_SEND = "Сообщение отправлено в партицию {} с offset {}";
-    public static final String MESSAGE_SEND = "Событие хаба {} отправлено в Kafka";
     public static final String ERROR_EVENT_KAFKA = "Ошибка при обработке события {}";
     public static final String ERROR_NOT_TOPIC_SENSOR = "Топик sensors-events не найден в конфигурации!";
     public static final String ERROR_NOT_TOPIC_HUB = "Топик hub-events не найден в конфигурации!";
