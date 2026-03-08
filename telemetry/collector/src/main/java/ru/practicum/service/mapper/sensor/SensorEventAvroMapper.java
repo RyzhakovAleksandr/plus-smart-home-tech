@@ -20,24 +20,14 @@ import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SensorEventAvroMapper {
 
-    @Mapping(target = "temperatureC", source = "temperatureC")
-    @Mapping(target = "humidity", source = "humidity")
-    @Mapping(target = "co2Level", source = "co2Level")
     ClimateSensorAvro mapClimateSensorToAvro(ClimateSensorEvent climateSensorEvent);
 
-    @Mapping(target = "linkQuality", source = "linkQuality")
-    @Mapping(target = "luminosity", source = "luminosity")
     LightSensorAvro mapLightSensorToAvro(LightSensorEvent lightSensorEvent);
 
-    @Mapping(target = "linkQuality", source = "linkQuality")
-    @Mapping(target = "motion", source = "motion")
-    @Mapping(target = "voltage", source = "voltage")
     MotionSensorAvro mapMotionSensorToAvro(MotionSensorEvent motionSensorEvent);
 
     SwitchSensorAvro mapSwitchSensorToAvro(SwitchSensorEvent switchSensorEvent);
 
-    @Mapping(target = "temperatureC", source = "temperatureC")
-    @Mapping(target = "temperatureF", source = "temperatureF")
     TemperatureSensorAvro mapTemperatureSensorToAvro(TemperatureSensorEvent temperatureSensorEvent);
 
     @Named("mapToAvroSafe")

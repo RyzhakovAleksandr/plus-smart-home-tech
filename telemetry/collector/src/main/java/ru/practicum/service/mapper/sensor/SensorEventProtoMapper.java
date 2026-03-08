@@ -22,22 +22,12 @@ import java.time.Instant;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SensorEventProtoMapper {
 
-    @Mapping(target = "linkQuality", source = "linkQuality")
-    @Mapping(target = "motion", source = "motion")
-    @Mapping(target = "voltage", source = "voltage")
     MotionSensorEvent mapMotionSensorProtoToModel(MotionSensorProto motionSensorProto);
 
-    @Mapping(target = "temperatureC", source = "temperatureC")
-    @Mapping(target = "temperatureF", source = "temperatureF")
     TemperatureSensorEvent mapTemperatureSensorProtoToModel(TemperatureSensorProto temperatureSensorProto);
 
-    @Mapping(target = "linkQuality", source = "linkQuality")
-    @Mapping(target = "luminosity", source = "luminosity")
     LightSensorEvent mapLightSensorProtoToModel(LightSensorProto lightSensorProto);
 
-    @Mapping(target = "temperatureC", source = "temperatureC")
-    @Mapping(target = "humidity", source = "humidity")
-    @Mapping(target = "co2Level", source = "co2Level")
     ClimateSensorEvent mapClimateSensorProtoToModel(ClimateSensorProto climateSensorProto);
 
     SwitchSensorEvent mapSwitchSensorProtoToModel(SwitchSensorProto switchSensorProto);
@@ -76,15 +66,5 @@ public interface SensorEventProtoMapper {
             return null;
         }
         return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
-    }
-
-    default Timestamp mapInstantToTimestamp(Instant instant) {
-        if (instant == null) {
-            return null;
-        }
-        return Timestamp.newBuilder()
-                .setSeconds(instant.getEpochSecond())
-                .setNanos(instant.getNano())
-                .build();
     }
 }

@@ -19,16 +19,29 @@ import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface HubEventAvroMapper {
 
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "type", source = "deviceType")
     DeviceAddedEventAvro mapDeviceAddedToAvro(DeviceAddedEvent deviceAddedEvent);
 
+    @Mapping(target = "id", source = "id")
     DeviceRemovedEventAvro mapDeviceRemoveToAvro(DeviceRemovedEvent deviceRemovedEvent);
 
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "conditions", source = "conditions")
+    @Mapping(target = "actions", source = "actions")
     ScenarioAddedEventAvro mapScenarioAddedToAvro(ScenarioAddedEvent scenarioAddedEvent);
 
+    @Mapping(target = "name", source = "name")
     ScenarioRemovedEventAvro mapScenarioRemovedToAvro(ScenarioRemovedEvent scenarioRemovedEvent);
 
+    @Mapping(target = "sensorId", source = "sensorId")
+    @Mapping(target = "type", source = "type")
+    @Mapping(target = "operation", source = "operation")
+    @Mapping(target = "value", source = "value")
     ScenarioConditionAvro mapConditionToAvro(ScenarioCondition condition);
 
+    @Mapping(target = "sensorId", source = "sensorId")
+    @Mapping(target = "type", source = "type")
+    @Mapping(target = "value", source = "value")
     DeviceActionAvro mapActionToAvro(DeviceAction action);
 }

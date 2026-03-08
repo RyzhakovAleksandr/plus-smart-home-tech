@@ -30,31 +30,34 @@ import ru.yandex.practicum.grpc.telemetry.event.ScenarioRemovedEventProto;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface HubEventProtoMapper {
 
-    @Mapping(target = "hubId", source = "hubId")
-    @Mapping(target = "timestamp", source = "timestamp")
-    HubEvent mapHubEventProtoToModel(HubEventProto hubEventProto);
-
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "deviceType", source = "type")
     @ValueMapping(target = "MOTION_SENSOR", source = "DEVICE_TYPE_PROTO_MOTION_SENSOR")
     @ValueMapping(target = "TEMPERATURE_SENSOR", source = "DEVICE_TYPE_PROTO_TEMPERATURE_SENSOR")
     @ValueMapping(target = "LIGHT_SENSOR", source = "DEVICE_TYPE_PROTO_LIGHT_SENSOR")
     @ValueMapping(target = "CLIMATE_SENSOR", source = "DEVICE_TYPE_PROTO_CLIMATE_SENSOR")
     @ValueMapping(target = "SWITCH_SENSOR", source = "DEVICE_TYPE_PROTO_SWITCH_SENSOR")
+    @ValueMapping(target = "UNRECOGNIZED", source = "UNRECOGNIZED")
     DeviceAddedEvent mapDeviceAddedProtoToModel(DeviceAddedEventProto deviceAddedEventProto);
 
+    @Mapping(target = "id", source = "id")
     DeviceRemovedEvent mapDeviceRemovedProtoToModel(DeviceRemovedEventProto deviceRemovedEventProto);
 
-    @Mapping(target = "conditions", source = "conditionsList")
-    @Mapping(target = "actions", source = "actionsList")
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "conditions", source = "conditionList")
+    @Mapping(target = "actions", source = "actionList")
     ScenarioAddedEvent mapScenarioAddedProtoToModel(ScenarioAddedEventProto scenarioAddedEventProto);
 
+    @Mapping(target = "name", source = "name")
     ScenarioRemovedEvent mapScenarioRemovedProtoToModel(ScenarioRemovedEventProto scenarioRemovedEventProto);
 
+    @Mapping(target = "sensorId", source = "sensorId")
     @Mapping(target = "type", source = "type")
     @Mapping(target = "operation", source = "operation")
     @Mapping(target = "value", expression = "java(mapScenarioConditionProtoValueToModelValue(scenarioConditionProto))")
     ScenarioCondition mapScenarioConditionProtoToModel(ScenarioConditionProto scenarioConditionProto);
 
+    @Mapping(target = "sensorId", source = "sensorId")
     @Mapping(target = "type", source = "type")
     @Mapping(target = "value", source = "value")
     DeviceAction mapDeviceActionProtoToModel(DeviceActionProto deviceActionProto);
@@ -65,17 +68,20 @@ public interface HubEventProtoMapper {
     @ValueMapping(target = "TEMPERATURE", source = "CONDITION_TYPE_PROTO_TEMPERATURE")
     @ValueMapping(target = "CO2LEVEL", source = "CONDITION_TYPE_PROTO_CO2LEVEL")
     @ValueMapping(target = "HUMIDITY", source = "CONDITION_TYPE_PROTO_HUMIDITY")
+    @ValueMapping(target = "UNRECOGNIZED", source = "UNRECOGNIZED")
     ConditionType mapConditionTypeProtoToModel(ConditionTypeProto conditionTypeProto);
 
     @ValueMapping(target = "EQUALS", source = "CONDITION_OPERATION_PROTO_EQUALS")
     @ValueMapping(target = "GREATER_THAN", source = "CONDITION_OPERATION_PROTO_GREATER_THAN")
     @ValueMapping(target = "LOWER_THAN", source = "CONDITION_OPERATION_PROTO_LOWER_THAN")
+    @ValueMapping(target = "UNRECOGNIZED", source = "UNRECOGNIZED")
     ConditionOperation mapConditionOperationProtoToModel(ConditionOperationProto conditionOperationProto);
 
     @ValueMapping(target = "ACTIVATE", source = "ACTION_TYPE_PROTO_ACTIVATE")
     @ValueMapping(target = "DEACTIVATE", source = "ACTION_TYPE_PROTO_DEACTIVATE")
     @ValueMapping(target = "INVERSE", source = "ACTION_TYPE_PROTO_INVERSE")
     @ValueMapping(target = "SET_VALUE", source = "ACTION_TYPE_PROTO_SET_VALUE")
+    @ValueMapping(target = "UNRECOGNIZED", source = "UNRECOGNIZED")
     ActionType mapActionTypeProtoToModel(ActionTypeProto actionTypeProto);
 
     @Named("mapScenarioConditionProtoValueToModelValue")
