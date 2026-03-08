@@ -2,5 +2,84 @@ syntax = "proto3";
 
 package telemetry.message.event;
 
+import "google/protobuf/timestamp.proto";
+
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
+
+message HubEventProto {
+    string hub_id = 1;
+    google.protobuf.Timestamp timestamp = 2;
+
+    oneof payload {
+        DeviceAddedEventProto device_added = 3;
+        DeviceRemovedEventProto device_removed = 4;
+        ScenarioAddedEventProto scenario_added = 5;
+        ScenarioRemovedEventProto scenario_removed = 6;
+    }
+}
+
+enum DeviceTypeProto {
+    DEVICE_TYPE_PROTO_MOTION_SENSOR = 0;
+    DEVICE_TYPE_PROTO_TEMPERATURE_SENSOR = 1;
+    DEVICE_TYPE_PROTO_LIGHT_SENSOR = 2;
+    DEVICE_TYPE_PROTO_CLIMATE_SENSOR = 3;
+    DEVICE_TYPE_PROTO_SWITCH_SENSOR = 4;
+}
+
+message DeviceAddedEventProto {
+    string id = 1;
+    DeviceTypeProto type = 2;
+}
+
+message DeviceRemovedEventProto {
+    string id = 1;
+}
+
+enum ConditionTypeProto {
+    CONDITION_TYPE_PROTO_MOTION = 0;
+    CONDITION_TYPE_PROTO_LUMINOSITY = 1;
+    CONDITION_TYPE_PROTO_SWITCH = 2;
+    CONDITION_TYPE_PROTO_TEMPERATURE = 3;
+    CONDITION_TYPE_PROTO_CO2LEVEL = 4;
+    CONDITION_TYPE_PROTO_HUMIDITY = 5;
+}
+
+enum ConditionOperationProto {
+    CONDITION_OPERATION_PROTO_EQUALS = 0;
+    CONDITION_OPERATION_PROTO_GREATER_THAN = 1;
+    CONDITION_OPERATION_PROTO_LOWER_THAN = 2;
+}
+
+message ScenarioConditionProto {
+    string sensor_id = 1;
+    ConditionTypeProto type = 2;
+    ConditionOperationProto operation = 3;
+    oneof value {
+        bool bool_value = 4;
+        int32 int_value = 5;
+    }
+}
+
+enum ActionTypeProto {
+    ACTION_TYPE_PROTO_ACTIVATE = 0;
+    ACTION_TYPE_PROTO_DEACTIVATE = 1;
+    ACTION_TYPE_PROTO_INVERSE = 2;
+    ACTION_TYPE_PROTO_SET_VALUE = 3;
+}
+
+message DeviceActionProto {
+    string sensor_id = 1;
+    ActionTypeProto type = 2;
+    optional int32 value = 3;
+}
+
+message ScenarioAddedEventProto {
+    string name = 1;
+    repeated ScenarioConditionProto condition = 2;
+    repeated DeviceActionProto action = 3;
+}
+
+message ScenarioRemovedEventProto {
+    string name = 1;
+}

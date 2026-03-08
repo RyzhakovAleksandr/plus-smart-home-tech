@@ -5,36 +5,37 @@ import org.springframework.stereotype.Component;
 import ru.practicum.config.KafkaConfig;
 import ru.practicum.model.sensor.MotionSensorEvent;
 import ru.practicum.model.sensor.SensorEvent;
-import ru.practicum.model.sensor.enums.SensorEventType;
 import ru.practicum.service.handler.KafkaEventProducer;
+import ru.practicum.service.mapper.sensor.SensorEventAvroMapper;
+import ru.practicum.service.mapper.sensor.SensorEventProtoMapper;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 @Slf4j
 @Component
 public class MotionSensorHandler extends BaseSensorHandler {
-    public MotionSensorHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
-        super(kafkaProducer, kafkaConfig);
+    public MotionSensorHandler(KafkaEventProducer kafkaProducer,
+                               KafkaConfig kafkaConfig,
+                               SensorEventAvroMapper avroMapper,
+                               SensorEventProtoMapper protoMapper) {
+        super(kafkaProducer, kafkaConfig, avroMapper, protoMapper);
     }
 
     @Override
-    public SensorEventType getMessageType() {
-        return SensorEventType.MOTION_SENSOR_EVENT;
+    public SensorEventProto.PayloadCase getMessageSensorType() {
+        return SensorEventProto.PayloadCase.MOTION_SENSOR;
     }
 
     @Override
-    public MotionSensorAvro mapToAvro(SensorEvent sensorEvent) {
-        MotionSensorEvent motionSensorEvent = (MotionSensorEvent) sensorEvent;
+    protected SensorEventAvro mapSensorEventToAvro(SensorEvent sensorEvent) {
+        MotionSensorAvro avro = avroMapper.mapMotionSensorToAvro((MotionSensorEvent) sensorEvent);
+        return buildSensorEventAvro(sensorEvent, avro);
+    }
 
-        Boolean originalValue = motionSensorEvent.getMotion();
-        boolean isMotion = Boolean.TRUE.equals(originalValue);
-
-        log.debug("MotionSensor: id={}, original isMotion={}, mapped to={}",
-                motionSensorEvent.getId(), originalValue, isMotion);
-
-        return MotionSensorAvro.newBuilder()
-                .setLinkQuality(motionSensorEvent.getLinkQuality() != null ? motionSensorEvent.getLinkQuality() : 0)
-                .setMotion(Boolean.TRUE.equals(motionSensorEvent.getMotion()))
-                .setVoltage(motionSensorEvent.getVoltage() != null ? motionSensorEvent.getVoltage() : 0)
-                .build();
+    @Override
+    protected SensorEvent mapSensorProtoToModel(SensorEventProto sensorProto) {
+        SensorEvent sensor = protoMapper.mapMotionSensorProtoToModel(sensorProto.getMotionSensor());
+        return mapBaseSensorProtoFieldsToSensor(sensor, sensorProto);
     }
 }

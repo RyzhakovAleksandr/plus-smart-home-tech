@@ -43,8 +43,6 @@ public class KafkaEventProducer {
                             metadata.partition(), metadata.offset());
                 }
             });
-
-            producer.flush();
             return future;
         } catch (Exception e) {
             throw new RuntimeException(Messages.ERROR_SEND_MESSAGE, e);
