@@ -64,7 +64,6 @@ public interface HubEventProtoMapper {
     @Mapping(target = "value", source = "value")
     DeviceAction mapDeviceActionProtoToModel(DeviceActionProto deviceActionProto);
 
-    // DeviceType маппер
     @ValueMapping(target = "MOTION_SENSOR", source = "DEVICE_TYPE_PROTO_MOTION_SENSOR")
     @ValueMapping(target = "TEMPERATURE_SENSOR", source = "DEVICE_TYPE_PROTO_TEMPERATURE_SENSOR")
     @ValueMapping(target = "LIGHT_SENSOR", source = "DEVICE_TYPE_PROTO_LIGHT_SENSOR")
