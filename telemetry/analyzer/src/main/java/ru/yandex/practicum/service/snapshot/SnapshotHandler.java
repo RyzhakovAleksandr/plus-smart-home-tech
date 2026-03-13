@@ -1,25 +1,25 @@
 package ru.yandex.practicum.service.snapshot;
 
-import org.springframework.transaction.annotation.Transactional;
+import com.google.protobuf.Timestamp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.clientGrpc.HubRouterClient;
-import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.messages.Message;
-import ru.yandex.practicum.model.Condition;
+import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
+import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
+import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+import ru.yandex.practicum.model.Action;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioAction;
-import ru.yandex.practicum.model.ScenarioCondition;
+import ru.yandex.practicum.model.Sensor;
 import ru.yandex.practicum.repository.ScenarioActionRepository;
-import ru.yandex.practicum.repository.ScenarioConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.service.SensorEventHandlerFactory;
-import ru.yandex.practicum.service.sensor.SensorEventHandler;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -27,89 +27,61 @@ import java.util.Map;
 public class SnapshotHandler {
 
     private final ScenarioRepository scenarioRepository;
-    private final ScenarioConditionRepository scenarioConditionRepository;
     private final ScenarioActionRepository scenarioActionRepository;
-    private final HubRouterClient routerClient;
     private final SensorEventHandlerFactory sensorHandlerFactory;
 
-    @Transactional(readOnly = true)
-    public void handle(SensorsSnapshotAvro sensorsSnapshotAvro) {
-        try {
-            Map<String, SensorStateAvro> sensorStateMap = sensorsSnapshotAvro.getSensorsState();
-            List<Scenario> scenariosList = scenarioRepository.findByHubId(sensorsSnapshotAvro.getHubId());
+    @GrpcClient("hub-router")
+    private HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
 
-            scenariosList.stream()
-                    .filter(scenario -> handleScenario(scenario, sensorStateMap))
-                    .forEach(scenario -> {
-                        log.info(Message.INFO_ACTION_SENDING, scenario.getName());
-                        sendScenarioAction(scenario);
-                    });
-        } catch (Exception e) {
-            log.error(Message.ERROR_SNAPSHOT_PROCESSING,
-                    sensorsSnapshotAvro.getHubId(), e);
-            throw e;
-        }
-
+    public void sendActions(List<Scenario> scenarios) {
+        scenarios.forEach(this::sendScenarioAction);
     }
 
     private void sendScenarioAction(Scenario scenario) {
         List<ScenarioAction> actions = scenarioActionRepository.findByScenario(scenario);
         log.info("Отправка {} действий для сценария '{}'", actions.size(), scenario.getName());
+
         actions.forEach(action -> {
-            log.info("Действие: sensorId={}, type={}, value={}",
-                    action.getSensor().getId(),
-                    action.getAction().getType(),
-                    action.getAction().getValue());
-            routerClient.sendAction(action);
+            try {
+                DeviceActionRequest request = buildDeviceActionRequest(action, scenario);
+                hubRouterClient.handleDeviceAction(request);
+                log.info("Действие отправлено: sensorId={}, type={}, value={}",
+                        action.getSensor().getId(),
+                        action.getAction().getType(),
+                        action.getAction().getValue());
+            } catch (Exception e) {
+                log.error("Ошибка отправки действия: {}", e.getMessage());
+            }
         });
     }
 
-    private boolean handleScenario(Scenario scenario, Map<String, SensorStateAvro> sensorStateMap) {
-        List<ScenarioCondition> scenarioConditions =
-                scenarioConditionRepository.findByScenario(scenario);
-        log.info(Message.INFO_SCENARIO_CONDITIONS_LIST,
-                scenarioConditions.size(), scenario.getName());
+    private DeviceActionRequest buildDeviceActionRequest(ScenarioAction scenarioAction, Scenario scenario) {
+        Action action = scenarioAction.getAction();
+        Sensor sensor = scenarioAction.getSensor();
 
-        return scenarioConditions.stream()
-                .noneMatch(sc -> !checkCondition(sc.getCondition(),
-                        sc.getSensor().getId(),
-                        sensorStateMap));
+        DeviceActionProto deviceActionProto = DeviceActionProto.newBuilder()
+                .setSensorId(sensor.getId())
+                .setType(mapActionTypeToProto(action.getType()))
+                .setValue(action.getValue())
+                .build();
+
+        return DeviceActionRequest.newBuilder()
+                .setHubId(scenario.getHubId())
+                .setScenarioName(scenario.getName())
+                .setAction(deviceActionProto)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(Instant.now().getEpochSecond())
+                        .setNanos(Instant.now().getNano())
+                        .build())
+                .build();
     }
 
-    private boolean checkOperation(Condition condition, Integer currentValue) {
-        Integer targetValue = condition.getValue();
-        return switch (condition.getOperation()) {
-            case EQUALS -> targetValue.equals(currentValue);
-            case GREATER_THAN -> currentValue > targetValue;
-            case LOWER_THAN -> currentValue < targetValue;
+    private ActionTypeProto mapActionTypeToProto(ActionTypeAvro actionType) {
+        return switch (actionType) {
+            case ACTIVATE -> ActionTypeProto.ACTION_TYPE_PROTO_ACTIVATE;
+            case DEACTIVATE -> ActionTypeProto.ACTION_TYPE_PROTO_DEACTIVATE;
+            case INVERSE -> ActionTypeProto.ACTION_TYPE_PROTO_INVERSE;
+            case SET_VALUE -> ActionTypeProto.ACTION_TYPE_PROTO_SET_VALUE;
         };
-    }
-
-    private boolean checkCondition(Condition condition, String sensorId,
-                                   Map<String, SensorStateAvro> sensorStateMap) {
-
-        SensorStateAvro sensorState = sensorStateMap.get(sensorId);
-        if (sensorState == null) {
-            return false;
-        }
-
-        String sensorType = sensorState.getData().getClass().getName();
-        SensorEventHandler handler = sensorHandlerFactory.getSensorHandlerMap().get(sensorType);
-
-        if (handler == null) {
-            log.error("Не найден обработчик для типа сенсора: {}", sensorType);
-            return false;
-        }
-
-        Integer currentValue = handler.getValue(condition.getConditionType(), sensorState);
-        if (currentValue == null) {
-            return false;
-        }
-
-        return checkOperation(condition, currentValue);
-    }
-
-    public void sendActions(List<Scenario> scenarios) {
-        scenarios.forEach(this::sendScenarioAction);
     }
 }
