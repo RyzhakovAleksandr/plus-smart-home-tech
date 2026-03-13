@@ -33,7 +33,7 @@ public class HubEventProcessor implements Runnable {
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private volatile boolean isRunning = true;
 
-    @Value("${analyzer.kafka.topics.hub-events}")
+    @Value("${kafka.hub-event-config.topic}")
     private String topic;
 
     @Override

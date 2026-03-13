@@ -14,6 +14,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
+import ru.yandex.practicum.model.ScenarioAction;
 import ru.yandex.practicum.model.ScenarioCondition;
 import ru.yandex.practicum.repository.ScenarioActionRepository;
 import ru.yandex.practicum.repository.ScenarioConditionRepository;
@@ -53,8 +54,15 @@ public class SnapshotHandler {
     }
 
     private void sendScenarioAction(Scenario scenario) {
-        scenarioActionRepository.findByScenario(scenario)
-                .forEach(routerClient::sendAction);
+        List<ScenarioAction> actions = scenarioActionRepository.findByScenario(scenario);
+        log.info("Отправка {} действий для сценария '{}'", actions.size(), scenario.getName());
+        actions.forEach(action -> {
+            log.info("Действие: sensorId={}, type={}, value={}",
+                    action.getSensor().getId(),
+                    action.getAction().getType(),
+                    action.getAction().getValue());
+            routerClient.sendAction(action);
+        });
     }
 
     private boolean handleScenario(Scenario scenario, Map<String, SensorStateAvro> sensorStateMap) {

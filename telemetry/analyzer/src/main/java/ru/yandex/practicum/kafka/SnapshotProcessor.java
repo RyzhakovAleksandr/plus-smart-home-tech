@@ -25,7 +25,7 @@ public class SnapshotProcessor {
     private final SnapshotHandler snapshotHandler;
     private volatile boolean isRunning = true;
 
-    @Value("${analyzer.kafka.topics.snapshots}")
+    @Value("${kafka.snapshot-config.topic}")
     private String topic;
 
     public void start() {

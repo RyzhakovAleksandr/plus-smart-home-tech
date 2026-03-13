@@ -4,9 +4,9 @@ spring:
 
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://localhost:5432/analyzer
+    username: analyzer_user
+    password: analyzer_password
 
   jpa:
     hibernate:
@@ -16,32 +16,27 @@ spring:
         format_sql: true
     show-sql: false
 
-#  sql:
-#    init:
-#      mode: always
+  sql:
+    init:
+      mode: always
 
-analyzer:
-  kafka:
-    topics:
-      snapshots: telemetry.snapshots.v1
-      hub-events: telemetry.hubs.v1
+kafka:
+  snapshot-config:
+    group-id: analyzer-snapshot-group
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: ru.yandex.practicum.kafka.deserializer.SensorSnapshotDeserializer
+    enable-auto-commit: false
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    topic: telemetry.snapshots.v1
 
-    consumers:
-      hub-events:
-        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-        value-deserializer: ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
-        group-id: hubEvent-group
-        client-id: HubEventConsumer
-        enable-auto-commit: false
-        auto-offset-reset: earliest
-
-      snapshots:
-        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-        value-deserializer: ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer
-        group-id: snapshot-group
-        client-id: SnapshotsConsumer
-        enable-auto-commit: false
-        auto-offset-reset: earliest
+  hub-event-config:
+    group-id: analyzer-hub-group
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
+    enable-auto-commit: true
+    auto-commit-interval-ms: 5000
+    bootstrap-servers: ${spring.kafka.bootstrap-servers}
+    topic: telemetry.hubs.v1
 
 grpc:
   client:
