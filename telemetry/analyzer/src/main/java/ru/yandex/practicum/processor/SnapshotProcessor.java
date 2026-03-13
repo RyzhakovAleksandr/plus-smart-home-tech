@@ -13,7 +13,7 @@ import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.service.AnalyzerService;
-import ru.yandex.practicum.service.snapshot.SnapshotHandler;
+import ru.yandex.practicum.service.HubEventServiceImpl;
 
 import java.time.Duration;
 import java.util.List;
@@ -25,7 +25,7 @@ public class SnapshotProcessor {
 
     private final Consumer<String, SensorsSnapshotAvro> consumer;
     private final AnalyzerService analyzerService;
-    private final SnapshotHandler snapshotHandler;
+    private final HubEventServiceImpl hubEventService;
     private volatile boolean isRunning = true;
 
     @Value("${kafka.snapshot-config.topic}")
@@ -73,7 +73,7 @@ public class SnapshotProcessor {
         List<Scenario> scenariosToExecute = analyzerService.analyze(snapshot);
         if (!scenariosToExecute.isEmpty()) {
             log.info(Message.INFO_SCENARIO_FOUND, scenariosToExecute.size());
-            snapshotHandler.sendActions(scenariosToExecute);
+            hubEventService.sendActions(scenariosToExecute);
         }
     }
 }
