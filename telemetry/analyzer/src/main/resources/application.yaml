@@ -4,9 +4,9 @@ spring:
 
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/analyzer
-    username: analyzer_user
-    password: analyzer_password
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
 
   jpa:
     hibernate:
@@ -16,9 +16,9 @@ spring:
         format_sql: true
     show-sql: false
 
-  sql:
-    init:
-      mode: always
+#  sql:
+#    init:
+#      mode: always
 
 analyzer:
   kafka:
@@ -28,12 +28,16 @@ analyzer:
 
     consumers:
       hub-events:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
         group-id: hubEvent-group
         client-id: HubEventConsumer
         enable-auto-commit: false
         auto-offset-reset: earliest
 
       snapshots:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer
         group-id: snapshot-group
         client-id: SnapshotsConsumer
         enable-auto-commit: false

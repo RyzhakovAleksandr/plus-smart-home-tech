@@ -73,4 +73,13 @@ public class HubRouterClient {
                 .setTimestamp(currentTimestamp())
                 .build();
     }
+
+/*    public HubRouterClient() {
+        log.info("HubRouterClient создан (упрощенная версия)");
+    }
+
+    public void sendAction(ScenarioAction scenarioAction) {
+        log.info("Действие для сценария '{}' (отправка отключена)",
+                scenarioAction.getScenario().getName());
+    }*/
 }
