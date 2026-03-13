@@ -5,12 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.clientGrpc.HubRouterClient;
-import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
@@ -19,6 +15,8 @@ import ru.yandex.practicum.model.ScenarioCondition;
 import ru.yandex.practicum.repository.ScenarioActionRepository;
 import ru.yandex.practicum.repository.ScenarioConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
+import ru.yandex.practicum.service.SensorEventHandlerFactory;
+import ru.yandex.practicum.service.sensor.SensorEventHandler;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,7 @@ public class SnapshotHandler {
     private final ScenarioConditionRepository scenarioConditionRepository;
     private final ScenarioActionRepository scenarioActionRepository;
     private final HubRouterClient routerClient;
+    private final SensorEventHandlerFactory sensorHandlerFactory;
 
     @Transactional(readOnly = true)
     public void handle(SensorsSnapshotAvro sensorsSnapshotAvro) {
@@ -93,31 +92,24 @@ public class SnapshotHandler {
         if (sensorState == null) {
             return false;
         }
-        return switch (condition.getType()) {
-            case MOTION -> {
-                MotionSensorAvro motion = (MotionSensorAvro) sensorState.getData();
-                yield checkOperation(condition, motion.getMotion() ? 1 : 0);
-            }
-            case LUMINOSITY -> {
-                LightSensorAvro light = (LightSensorAvro) sensorState.getData();
-                yield checkOperation(condition, light.getLuminosity());
-            }
-            case SWITCH -> {
-                SwitchSensorAvro sw = (SwitchSensorAvro) sensorState.getData();
-                yield checkOperation(condition, sw.getState() ? 1 : 0);
-            }
-            case TEMPERATURE -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield checkOperation(condition, climate.getTemperatureC());
-            }
-            case CO2LEVEL -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield checkOperation(condition, climate.getCo2Level());
-            }
-            case HUMIDITY -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield checkOperation(condition, climate.getHumidity());
-            }
-        };
+
+        String sensorType = sensorState.getData().getClass().getName();
+        SensorEventHandler handler = sensorHandlerFactory.getSensorHandlerMap().get(sensorType);
+
+        if (handler == null) {
+            log.error("Не найден обработчик для типа сенсора: {}", sensorType);
+            return false;
+        }
+
+        Integer currentValue = handler.getValue(condition.getConditionType(), sensorState);
+        if (currentValue == null) {
+            return false;
+        }
+
+        return checkOperation(condition, currentValue);
+    }
+
+    public void sendActions(List<Scenario> scenarios) {
+        scenarios.forEach(this::sendScenarioAction);
     }
 }

@@ -24,8 +24,8 @@ public class HubRouterClient {
     private final HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouter;
 
     public HubRouterClient(@GrpcClient("hub-router") HubRouterControllerGrpc.HubRouterControllerBlockingStub hub) {
-
         this.hubRouter = hub;
+        log.info("HubRouterClient инициализирован");
     }
 
     public void sendAction(ScenarioAction scenarioAction) {

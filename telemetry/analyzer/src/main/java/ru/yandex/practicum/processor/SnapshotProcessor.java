@@ -1,4 +1,4 @@
-package ru.yandex.practicum.kafka;
+package ru.yandex.practicum.processor;
 
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,8 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 import ru.yandex.practicum.messages.Message;
+import ru.yandex.practicum.model.Scenario;
+import ru.yandex.practicum.service.AnalyzerService;
 import ru.yandex.practicum.service.snapshot.SnapshotHandler;
 
 import java.time.Duration;
@@ -22,6 +24,7 @@ import java.util.List;
 public class SnapshotProcessor {
 
     private final Consumer<String, SensorsSnapshotAvro> consumer;
+    private final AnalyzerService analyzerService;
     private final SnapshotHandler snapshotHandler;
     private volatile boolean isRunning = true;
 
@@ -67,6 +70,10 @@ public class SnapshotProcessor {
     private void handleRecord(ConsumerRecord<String, SensorsSnapshotAvro> record) {
         SensorsSnapshotAvro snapshot = record.value();
         log.info(Message.INFO_SNAPSHOT_RECEIVED, snapshot);
-        snapshotHandler.handle(snapshot);
+        List<Scenario> scenariosToExecute = analyzerService.analyze(snapshot);
+        if (!scenariosToExecute.isEmpty()) {
+            log.info(Message.INFO_SCENARIO_FOUND, scenariosToExecute.size());
+            snapshotHandler.sendActions(scenariosToExecute);
+        }
     }
 }

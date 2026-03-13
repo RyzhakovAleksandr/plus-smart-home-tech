@@ -17,6 +17,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
+import ru.yandex.practicum.service.mapper.ConditionTypeMapper;
 
 @Entity
 @Table(name = "conditions")
@@ -42,4 +43,8 @@ public class Condition {
 
     @Column(name = "value")
     Integer value;
+
+    public ConditionType getConditionType() {
+        return ConditionTypeMapper.toModel(this.type);
+    }
 }

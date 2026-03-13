@@ -10,6 +10,7 @@ public class Message {
     public static final String INFO_DEVICE_REMOVING = "Удаляем устройство из HUBa с ID = {} с hub_id = {}";
     public static final String INFO_SCENARIO_CONDITIONS_LIST = "Получили СПИСОК условий {} у сценария name = {}";
     public static final String INFO_SCENARIO_REMOVING = "Удаляем сценарий из HUB с NAME = {} и с ID = {}";
+    public static final String INFO_SCENARIO_FOUND = "Найдено {} сценариев для выполнения";
     public static final String INFO_SCENARIO_NOT_FOUND = "Сценарий не найден";
     // Ошибки
     public static final String ERROR_ACTION_SEND = "Ошибка отправки действия в Hub Router";

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.kafka;
+package ru.yandex.practicum.processor;
 
 
 import jakarta.annotation.PreDestroy;
@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.messages.Message;
-import ru.yandex.practicum.service.HubEventHandlerFactory;
+import ru.yandex.practicum.service.HubEventService;
 import ru.yandex.practicum.service.hub.HubEventHandler;
 
 import java.time.Duration;
@@ -29,7 +29,7 @@ import java.util.OptionalLong;
 public class HubEventProcessor implements Runnable {
 
     private final Consumer<String, HubEventAvro> consumer;
-    private final HubEventHandlerFactory handlerFactory;
+    private final HubEventService hubEventService;
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
     private volatile boolean isRunning = true;
 
@@ -41,14 +41,13 @@ public class HubEventProcessor implements Runnable {
         try {
             consumer.subscribe(List.of(topic));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
-            Map<String, HubEventHandler> handlerMap = handlerFactory.getHubMap();
 
             while (isRunning) {
                 ConsumerRecords<String, HubEventAvro> records = consumer.poll(Duration.ofMillis(1000));
                 int count = 0;
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    handleRecord(record, handlerMap);
+                    hubEventService.processEvent(record.value());
                     manageOffsets(record, count);
                     count++;
                 }
