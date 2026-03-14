@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+import ru.yandex.practicum.model.enums.ActionType;
 
 @Entity
 @Table(name = "actions")
@@ -33,8 +33,20 @@ public class Action {
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    ActionTypeAvro type;
+    ActionType type;
 
     @Column(name = "value")
     Integer value;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Action)) return false;
+        return id != null && id.equals(((Action) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

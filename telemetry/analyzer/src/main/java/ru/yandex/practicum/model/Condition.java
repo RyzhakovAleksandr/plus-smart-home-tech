@@ -15,9 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
-import ru.yandex.practicum.service.mapper.ConditionTypeMapper;
+import ru.yandex.practicum.model.enums.ConditionOperation;
+import ru.yandex.practicum.model.enums.ConditionType;
 
 @Entity
 @Table(name = "conditions")
@@ -35,16 +34,24 @@ public class Condition {
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    ConditionTypeAvro type;
+    ConditionType type;
 
     @Column(name = "operation")
     @Enumerated(EnumType.STRING)
-    ConditionOperationAvro operation;
+    ConditionOperation operation;
 
     @Column(name = "value")
     Integer value;
 
-    public ConditionType getConditionType() {
-        return ConditionTypeMapper.toModel(this.type);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Condition)) return false;
+        return id != null && id.equals(((Condition) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -9,13 +9,10 @@ import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
-import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.model.Action;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioAction;
-import ru.yandex.practicum.model.Sensor;
-import ru.yandex.practicum.service.hub.HubEventHandler;
+import ru.yandex.practicum.service.handel.hub.HubEventHandler;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,12 +28,12 @@ public class HubEventServiceImpl implements HubEventService {
     private final Map<String, HubEventHandler> hubEventHandlers;
 
     @GrpcClient("hub-router")
-    private HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
+    HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
 
     public HubEventServiceImpl(Set<HubEventHandler> handlers) {
         this.hubEventHandlers = handlers.stream()
                 .collect(Collectors.toMap(
-                        HubEventHandler::getPayloadType,
+                        HubEventHandler::getType,
                         Function.identity()
                 ));
     }
@@ -44,7 +41,9 @@ public class HubEventServiceImpl implements HubEventService {
     @Override
     @Transactional
     public void processEvent(HubEventAvro event) {
-        String type = event.getPayload().getClass().getSimpleName();
+
+        String type = event.getPayload().getClass().getName();
+
         HubEventHandler handler = hubEventHandlers.get(type);
 
         if (handler == null) {
@@ -55,58 +54,60 @@ public class HubEventServiceImpl implements HubEventService {
         handler.handle(event);
     }
 
-    public void sendActions(List<Scenario> scenarios) {
+    @Override
+    @Transactional(readOnly = true)
+    public void actionExecute(List<Scenario> scenarios) {
+
         if (scenarios == null || scenarios.isEmpty()) {
+            log.debug("Нет сценариев для выполнения");
             return;
         }
 
         for (Scenario scenario : scenarios) {
-            for (ScenarioAction action : scenario.getActions()) {
-                sendAction(action, scenario);
+
+            String hubId = scenario.getHubId();
+            String name = scenario.getName();
+
+            List<ScenarioAction> actions = scenario.getActions();
+
+            for (ScenarioAction action : actions) {
+                log.info("Действие: sensorId={}, actionType={}, value={}",
+                        action.getSensor().getId(),
+                        action.getAction().getType(),
+                        action.getAction().getValue());
+                sendActions(action, hubId, name);
             }
         }
     }
 
-    private void sendAction(ScenarioAction scenarioAction, Scenario scenario) {
-        try {
-            DeviceActionRequest request = buildDeviceActionRequest(scenarioAction, scenario);
-            hubRouterClient.handleDeviceAction(request);
-            log.info("Действие отправлено: sensorId={}, type={}, value={}",
-                    scenarioAction.getSensor().getId(),
-                    scenarioAction.getAction().getType(),
-                    scenarioAction.getAction().getValue());
-        } catch (Exception e) {
-            log.error("Ошибка отправки действия: {}", e.getMessage());
-        }
-    }
+    private void sendActions(ScenarioAction action, String hubId, String name) {
 
-    private DeviceActionRequest buildDeviceActionRequest(ScenarioAction scenarioAction, Scenario scenario) {
-        Action action = scenarioAction.getAction();
-        Sensor sensor = scenarioAction.getSensor();
+        String sensorId = action.getSensor().getId();
+        String actionType = action.getAction().getType().name();
+        Integer value = action.getAction().getValue();
 
         DeviceActionProto deviceActionProto = DeviceActionProto.newBuilder()
-                .setSensorId(sensor.getId())
-                .setType(mapActionTypeToProto(action.getType()))
-                .setValue(action.getValue())
+                .setSensorId(sensorId)
+                .setType(ActionTypeProto.valueOf(actionType))
+                .setValue(value)
                 .build();
 
-        return DeviceActionRequest.newBuilder()
-                .setHubId(scenario.getHubId())
-                .setScenarioName(scenario.getName())
+        DeviceActionRequest deviceActionRequest = DeviceActionRequest.newBuilder()
+                .setHubId(hubId)
+                .setScenarioName(name)
                 .setAction(deviceActionProto)
                 .setTimestamp(Timestamp.newBuilder()
-                        .setSeconds(Instant.now().getEpochSecond())
-                        .setNanos(Instant.now().getNano())
-                        .build())
+                        .setSeconds(Instant.now().getEpochSecond()).setNanos(Instant.now().getNano()))
                 .build();
-    }
 
-    private ActionTypeProto mapActionTypeToProto(ActionTypeAvro actionType) {
-        return switch (actionType) {
-            case ACTIVATE -> ActionTypeProto.ACTION_TYPE_PROTO_ACTIVATE;
-            case DEACTIVATE -> ActionTypeProto.ACTION_TYPE_PROTO_DEACTIVATE;
-            case INVERSE -> ActionTypeProto.ACTION_TYPE_PROTO_INVERSE;
-            case SET_VALUE -> ActionTypeProto.ACTION_TYPE_PROTO_SET_VALUE;
-        };
+        try {
+            hubRouterClient.handleDeviceAction(deviceActionRequest);
+            log.info("Команда отправлена: устройство={}, действие={}, значение={}",
+                    sensorId, actionType, value);
+        } catch (Exception e) {
+            log.error("Ошибка gRPC при отправке команды устройству: {}",
+                    e.getMessage());
+            throw e;
+        }
     }
 }

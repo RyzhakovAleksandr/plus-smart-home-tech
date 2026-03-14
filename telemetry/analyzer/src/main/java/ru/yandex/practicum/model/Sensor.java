@@ -25,4 +25,16 @@ public class Sensor {
 
     @Column(name = "hub_id")
     String hubId;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sensor)) return false;
+        return id != null && id.equals(((Sensor) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
