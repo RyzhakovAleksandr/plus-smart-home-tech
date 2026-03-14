@@ -1,6 +1,7 @@
 package ru.yandex.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
@@ -36,6 +37,16 @@ public class EnumMapper {
             case DEACTIVATE -> ActionType.DEACTIVATE;
             case INVERSE -> ActionType.INVERSE;
             case SET_VALUE -> ActionType.SET_VALUE;
+        };
+    }
+
+    public ActionTypeProto toActionTypeProto(String typeString) {
+        return switch (typeString) {
+            case "ACTIVATE" -> ActionTypeProto.ACTION_TYPE_PROTO_ACTIVATE;
+            case "DEACTIVATE" -> ActionTypeProto.ACTION_TYPE_PROTO_DEACTIVATE;
+            case "INVERSE" -> ActionTypeProto.ACTION_TYPE_PROTO_INVERSE;
+            case "SET_VALUE" -> ActionTypeProto.ACTION_TYPE_PROTO_SET_VALUE;
+            default -> throw new IllegalArgumentException("Unknown ActionType: " + typeString);
         };
     }
 }

@@ -1,3 +1,9 @@
+TRUNCATE TABLE scenario_actions CASCADE;
+TRUNCATE TABLE scenario_conditions CASCADE;
+TRUNCATE TABLE scenarios CASCADE;
+TRUNCATE TABLE actions CASCADE;
+TRUNCATE TABLE conditions CASCADE;
+
 -- создаём таблицу scenarios
 CREATE TABLE IF NOT EXISTS scenarios (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

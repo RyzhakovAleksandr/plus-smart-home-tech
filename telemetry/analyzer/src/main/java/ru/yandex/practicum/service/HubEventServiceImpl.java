@@ -10,6 +10,7 @@ import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.mapper.EnumMapper;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioAction;
 import ru.yandex.practicum.service.handel.hub.HubEventHandler;
@@ -90,40 +91,51 @@ public class HubEventServiceImpl implements HubEventService {
     }
 
     private void sendActions(ScenarioAction action, String hubId, String name) {
-/*
         String sensorId = action.getSensor().getId();
-        String actionType = action.getAction().getType().name();
+        String actionTypeString = action.getAction().getType().name(); // Объявляем ДО try-блока
         Integer value = action.getAction().getValue();
 
-        DeviceActionProto deviceActionProto = DeviceActionProto.newBuilder()
-                .setSensorId(sensorId)
-                .setType(ActionTypeProto.valueOf(actionType))
-                .setValue(value)
-                .build();
-
-        DeviceActionRequest deviceActionRequest = DeviceActionRequest.newBuilder()
-                .setHubId(hubId)
-                .setScenarioName(name)
-                .setAction(deviceActionProto)
-                .setTimestamp(Timestamp.newBuilder()
-                        .setSeconds(Instant.now().getEpochSecond()).setNanos(Instant.now().getNano()))
-                .build();
-
         try {
-            hubRouterClient.handleDeviceAction(deviceActionRequest);
-            log.info("Команда отправлена: устройство={}, действие={}, значение={}",
-                    sensorId, actionType, value);
-        } catch (Exception e) {
-            log.error("Ошибка gRPC при отправке команды устройству: {}",
-                    e.getMessage());
-            throw e;
-        }*/
-        System.out.println("=== УСПЕШНАЯ ОТПРАВКА В HUB ROUTER ===");
-        System.out.println("Хаб: " + hubId);
-        System.out.println("Сценарий: " + name);
-        System.out.println("Устройство: " + action.getSensor().getId());
-        System.out.println("Действие: " + action.getAction().getType());
-        System.out.println("Значение: " + action.getAction().getValue());
-        System.out.println("======================================");
+            // Преобразуем строку в ActionTypeProto через маппер
+            ActionTypeProto actionTypeProto = EnumMapper.toActionTypeProto(actionTypeString);
+
+            DeviceActionProto deviceActionProto = DeviceActionProto.newBuilder()
+                    .setSensorId(sensorId)
+                    .setType(actionTypeProto)  // Используем преобразованное значение
+                    .setValue(value)
+                    .build();
+
+            DeviceActionRequest deviceActionRequest = DeviceActionRequest.newBuilder()
+                    .setHubId(hubId)
+                    .setScenarioName(name)
+                    .setAction(deviceActionProto)
+                    .setTimestamp(Timestamp.newBuilder()
+                            .setSeconds(Instant.now().getEpochSecond())
+                            .setNanos(Instant.now().getNano())
+                            .build())
+                    .build();
+
+            try {
+                hubRouterClient.handleDeviceAction(deviceActionRequest);
+                log.info("Команда отправлена: устройство={}, действие={}, значение={}",
+                        sensorId, actionTypeString, value);
+            } catch (Exception e) {
+                log.error("Ошибка gRPC при отправке команды устройству: {}", e.getMessage());
+                throw e;
+            }
+
+            System.out.println("=== УСПЕШНАЯ ОТПРАВКА В HUB ROUTER ===");
+            System.out.println("Хаб: " + hubId);
+            System.out.println("Сценарий: " + name);
+            System.out.println("Устройство: " + action.getSensor().getId());
+            System.out.println("Действие: " + actionTypeString);
+            System.out.println("Значение: " + value);
+            System.out.println("======================================");
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Неизвестный тип действия '{}' для устройства {}. Команда не отправлена.",
+                    actionTypeString, sensorId);
+            // Пропускаем отправку для неизвестных действий, продолжаем работу
+        }
     }
 }
