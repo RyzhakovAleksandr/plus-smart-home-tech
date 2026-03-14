@@ -94,7 +94,7 @@ public class SnapshotProcessor {
     }
 
     private void handleSnapshot(ConsumerRecord<String, SensorsSnapshotAvro> record) {
-        List<Scenario> scenariosToExecute = analyzerService.analyze(record.value());
+/*        List<Scenario> scenariosToExecute = analyzerService.analyze(record.value());
 
         if (!scenariosToExecute.isEmpty()) {
             log.info("Найдено {} сценариев для выполнения", scenariosToExecute.size());
@@ -102,6 +102,22 @@ public class SnapshotProcessor {
             hubEventService.actionExecute(scenariosToExecute);
         } else {
             log.info("⏭️ Нет сценариев для выполнения");
+        }*/
+        System.out.println(">>> SnapshotProcessor.handleSnapshot START");
+        System.out.println(">>> Snapshot key: " + record.key());
+        System.out.println(">>> Snapshot value: " + record.value());
+
+        List<Scenario> scenariosToExecute = analyzerService.analyze(record.value());
+
+        System.out.println(">>> AnalyzerService.analyze вернул " + scenariosToExecute.size() + " сценариев");
+
+        if (!scenariosToExecute.isEmpty()) {
+            System.out.println(">>> Вызываю hubEventService.actionExecute() с " + scenariosToExecute.size() + " сценариями");
+            hubEventService.actionExecute(scenariosToExecute);
+        } else {
+            System.out.println(">>> Нет сценариев для выполнения");
         }
+
+        System.out.println(">>> SnapshotProcessor.handleSnapshot END");
     }
 }

@@ -57,6 +57,13 @@ public class HubEventServiceImpl implements HubEventService {
     @Override
     @Transactional(readOnly = true)
     public void actionExecute(List<Scenario> scenarios) {
+        System.out.println(">>> actionExecute ВЫЗВАН! Количество сценариев: " + scenarios.size());
+
+        for (Scenario scenario : scenarios) {
+            System.out.println(">>> Сценарий: " + scenario.getName() + ", HubId: " + scenario.getHubId());
+            System.out.println(">>> Действий в сценарии: " +
+                    (scenario.getActions() != null ? scenario.getActions().size() : 0));
+        }
         log.info(">>> actionExecute вызван с {} сценариями", scenarios.size());
 
         if (scenarios == null || scenarios.isEmpty()) {
