@@ -98,7 +98,10 @@ public class SnapshotProcessor {
 
         if (!scenariosToExecute.isEmpty()) {
             log.info("Найдено {} сценариев для выполнения", scenariosToExecute.size());
+            log.info(">>> Передаю сценарии в HubEventServiceImpl.actionExecute()");
             hubEventService.actionExecute(scenariosToExecute);
+        } else {
+            log.info("⏭️ Нет сценариев для выполнения");
         }
     }
 }

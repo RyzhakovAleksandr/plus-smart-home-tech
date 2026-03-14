@@ -57,6 +57,7 @@ public class HubEventServiceImpl implements HubEventService {
     @Override
     @Transactional(readOnly = true)
     public void actionExecute(List<Scenario> scenarios) {
+        log.info(">>> actionExecute вызван с {} сценариями", scenarios.size());
 
         if (scenarios == null || scenarios.isEmpty()) {
             log.debug("Нет сценариев для выполнения");
@@ -64,6 +65,7 @@ public class HubEventServiceImpl implements HubEventService {
         }
 
         for (Scenario scenario : scenarios) {
+            log.info(">>> Обработка сценария: {} (hubId: {})", scenario.getName(), scenario.getHubId());
 
             String hubId = scenario.getHubId();
             String name = scenario.getName();
