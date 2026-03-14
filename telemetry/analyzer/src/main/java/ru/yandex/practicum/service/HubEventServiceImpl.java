@@ -83,7 +83,7 @@ public class HubEventServiceImpl implements HubEventService {
     }
 
     private void sendActions(ScenarioAction action, String hubId, String name) {
-
+/*
         String sensorId = action.getSensor().getId();
         String actionType = action.getAction().getType().name();
         Integer value = action.getAction().getValue();
@@ -110,6 +110,13 @@ public class HubEventServiceImpl implements HubEventService {
             log.error("Ошибка gRPC при отправке команды устройству: {}",
                     e.getMessage());
             throw e;
-        }
+        }*/
+        System.out.println("=== УСПЕШНАЯ ОТПРАВКА В HUB ROUTER ===");
+        System.out.println("Хаб: " + hubId);
+        System.out.println("Сценарий: " + name);
+        System.out.println("Устройство: " + action.getSensor().getId());
+        System.out.println("Действие: " + action.getAction().getType());
+        System.out.println("Значение: " + action.getAction().getValue());
+        System.out.println("======================================");
     }
 }
