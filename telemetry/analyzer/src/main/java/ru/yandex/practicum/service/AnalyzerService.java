@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioCondition;
 import ru.yandex.practicum.model.enums.ConditionOperation;
@@ -37,7 +38,7 @@ public class AnalyzerService {
     @Transactional(readOnly = true)
     public List<Scenario> analyze(SensorsSnapshotAvro snapshot) {
 
-        log.info("Анализ снапшота: {}", snapshot);
+        log.info(Message.ANALYZING_SNAPSHOT, snapshot);
 
         List<Scenario> scenariosToExecute = new ArrayList<>();
 
@@ -45,11 +46,11 @@ public class AnalyzerService {
         List<Scenario> scenarios = scenarioRepository.findByHubIdWithActions(hubId);
 
         if (scenarios.isEmpty()) {
-            log.debug("Для хаба {} сценарии не найдены", hubId);
+            log.debug(Message.NO_SCENARIOS_FOR_HUB, hubId);
             return scenariosToExecute;
         }
 
-        log.info("Найдено {} сценариев для хаба {}", scenarios.size(), hubId);
+        log.info(Message.SCENARIOS_FOUND_FOR_HUB, scenarios.size(), hubId);
 
         for (Scenario scenario : scenarios) {
             if (checkScenario(scenario, snapshot)) {
@@ -57,16 +58,16 @@ public class AnalyzerService {
             }
         }
 
-        log.debug("Найдено сценариев для выполнения в количестве: {}", scenariosToExecute.size());
+        log.debug(Message.SCENARIOS_FOUND, scenariosToExecute.size());
 
         return scenariosToExecute;
     }
 
     private boolean checkScenario(Scenario scenario, SensorsSnapshotAvro snapshot) {
-        log.debug("Проверка сценария: {}", scenario.getName());
+        log.debug(Message.CHECKING_SCENARIO, scenario.getName());
         for (ScenarioCondition condition : scenario.getConditions()) {
             if (!checkCondition(condition, snapshot)) {
-                log.debug("Условие не выполнено. Датчик: {}. Тип: {}.", condition.getSensor().getId(),
+                log.debug(Message.CONDITION_NOT_MET, condition.getSensor().getId(),
                         condition.getCondition().getType());
                 return false;
             }
@@ -81,7 +82,7 @@ public class AnalyzerService {
         SensorStateAvro state = sensorStates.get(condition.getSensor().getId());
 
         if (state == null) {
-            log.debug("Датчик {} не найден в снапшоте", condition.getSensor().getId());
+            log.debug(Message.SENSOR_NOT_IN_SNAPSHOT, condition.getSensor().getId());
             return false;
         }
 
@@ -90,14 +91,14 @@ public class AnalyzerService {
         SensorEventHandler handler = sensorEventHandlers.get(dataType);
 
         if (handler == null) {
-            log.error("Не найден обработчик для типа данных сенсора: {}", dataType);
-            throw new IllegalArgumentException("Нет обработчика для " + dataType);
+            log.error(Message.NO_SENSOR_HANDLER, dataType);
+            throw new IllegalArgumentException(String.format(Message.NO_HANDLER_FOR, dataType));
         }
 
         Integer actualValue = handler.getValue(condition.getCondition().getType(), state);
 
         if (actualValue == null) {
-            log.debug("Не удалось получить значение типа {} из датчика {}",
+            log.debug(Message.SENSOR_VALUE_RETRIEVAL_FAILED,
                     condition.getCondition().getType(), condition.getSensor().getId());
             return false;
         }
@@ -107,7 +108,7 @@ public class AnalyzerService {
 
         boolean result = compareValues(actualValue, expectedValue, operation);
 
-        log.debug("Датчик: {}, {}, {}, {}", condition.getSensor().getId(), actualValue, expectedValue, result);
+        log.debug(Message.SENSOR_LOG, condition.getSensor().getId(), actualValue, expectedValue, result);
 
         return result;
     }

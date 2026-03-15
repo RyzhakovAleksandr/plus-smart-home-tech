@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.repository.SensorRepository;
 
 @Slf4j
@@ -24,7 +25,7 @@ public class DeviceRemovedHandler implements HubEventHandler {
         String hubId = event.getHubId();
         DeviceRemovedEventAvro payload = (DeviceRemovedEventAvro) event.getPayload();
 
-        sensorRepository.findByIdAndHubId(payload.getId(),  hubId).ifPresent(sensorRepository::delete);
-        log.info("Устройство {} удалено из хаба {}", payload.getId(), hubId);
+        sensorRepository.findByIdAndHubId(payload.getId(), hubId).ifPresent(sensorRepository::delete);
+        log.info(Message.DEVICE_REMOVED_FROM_HUB, payload.getId(), hubId);
     }
 }

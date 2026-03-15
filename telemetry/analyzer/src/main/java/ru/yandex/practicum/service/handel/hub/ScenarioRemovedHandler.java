@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.repository.ScenarioActionRepository;
 import ru.yandex.practicum.repository.ScenarioConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
@@ -36,9 +37,9 @@ public class ScenarioRemovedHandler implements HubEventHandler {
 
                             scenarioRepository.delete(scenario);
 
-                            log.info("Сценарий {} удален из хаба {}", scenarioName, hubId);
+                            log.info(Message.SCENARIO_REMOVED, scenarioName, hubId);
                         },
-                        () -> log.warn("Сценарий {} не найден в хабе {}", scenarioName, hubId)
+                        () -> log.warn(Message.SCENARIO_NOT_FOUND, scenarioName, hubId)
                 );
     }
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Sensor;
 import ru.yandex.practicum.repository.SensorRepository;
 
@@ -31,6 +32,6 @@ public class DeviceAddedHandler implements HubEventHandler {
                 .build();
 
         sensorRepository.save(sensor);
-        log.info("Устройство {} добавлено в хаб {}", payload.getId(), hubId);
+        log.info(Message.DEVICE_ADDED_TO_HUB, payload.getId(), hubId);
     }
 }

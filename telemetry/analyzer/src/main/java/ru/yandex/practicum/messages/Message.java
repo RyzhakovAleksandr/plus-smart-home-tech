@@ -1,35 +1,52 @@
 package ru.yandex.practicum.messages;
 
 public class Message {
-    // Успешные операции
-    public static final String INFO_ACTION_SENDING = "Отправка ДЕЙСТВИЯ для сценария {}";
-    public static final String INFO_ACTION_SENT = "Действие отправлено: scenario={}, sensor={}";
-    public static final String INFO_HUB_MESSAGE = "Получено HUB сообщение типа: {}";
-    public static final String INFO_SNAPSHOT_RECEIVED = "Получили SNAPSHOT состояния умного дома: {}";
-    public static final String INFO_DEVICE_SAVING = "Сохраняем новое устройство для HUB с ID = {}";
-    public static final String INFO_DEVICE_REMOVING = "Удаляем устройство из HUBa с ID = {} с hub_id = {}";
-    public static final String INFO_SCENARIO_CONDITIONS_LIST = "Получили СПИСОК условий {} у сценария name = {}";
-    public static final String INFO_SCENARIO_REMOVING = "Удаляем сценарий из HUB с NAME = {} и с ID = {}";
-    public static final String INFO_SCENARIO_FOUND = "Найдено {} сценариев для выполнения";
-    public static final String INFO_SCENARIO_NOT_FOUND = "Сценарий не найден";
-    // Ошибки
-    public static final String ERROR_ACTION_SEND = "Ошибка отправки действия в Hub Router";
-    public static final String ERROR_SNAPSHOT_PROCESSING = "Ошибка обработки снапшота для хаба {}";
-    public static final String ERROR_KAFKA_CONSUME = "Ошибка чтения данных из топика {}";
-    public static final String ERROR_OFFSET_COMMIT = "Ошибка во время фиксации offset-ов: {}";
+    //logs
+    public static final String SCENARIO_ADDING = "Добавление сценария: hubId={}, scenarioName={}, условий={}, действий={}";
+    public static final String SCENARIO_DELETING = "Удаление существующего сценария: id={}, name={}";
+    public static final String SCENARIO_SAVED = "Сценарий {} успешно сохранен для хаба {}";
+    public static final String SCENARIO_REMOVED = "Сценарий {} удален из хаба {}";
+    public static final String SCENARIOS_FOUND = "Найдено {} сценариев для выполнения";
+    public static final String PROCESSING_SCENARIO = ">>> Обработка сценария: {} (hubId: {})";
+    public static final String SCENARIOS_FOUND_FOR_HUB = "Найдено {} сценариев для хаба {}";
+    public static final String NO_SCENARIOS_FOUND = "Нет сценариев для выполнения";
+    public static final String DEVICE_ADDED_TO_HUB = "Устройство {} добавлено в хаб {}";
+    public static final String DEVICE_REMOVED_FROM_HUB = "Устройство {} удалено из хаба {}";
+    public static final String ACTION_DETAILS = "Действие: sensorId={}, actionType={}, value={}";
+    public static final String WAITING_FOR_MESSAGES = "Ожидание новых сообщений...";
+    public static final String COMMAND_SENT = "Команда отправлена: устройство={}, действие={}, значение={}";
+    public static final String CONDITION_ADDED = "Добавлено условие: sensor={}, type={}, operation={}, value={}";
+    public static final String SHUTDOWN_SIGNAL_RECEIVED = "Получен сигнал завершения, инициируем остановку...";
+    public static final String ANALYZING_SNAPSHOT = "Анализ снапшота: {}";
+    public static final String ACTION_EXECUTE_CALLED = "actionExecute вызван с {} сценариями";
+    public static final String CONSUMER_CLOSED = "Consumer закрыт";
+    public static final String ANALYZER_CLOSED = "Analyzer завершил работу";
 
-    // Exceptions
-    public static final String ERROR_NO_HANDLER = "Не найден обработчик для события типа %s";
+    //debug
+    public static final String PROCESSING_HUB_EVENT = "Обработка хаб-ивента: topic={}, partition={}, offset={}, hubId={}";
+    public static final String PROCESSING_SNAPSHOT = "Обработка снепшота: topic={}, partition={}, offset={}, hubId={}";
+    public static final String ACTION_ADDED = "Добавлено действие: sensor={}, type={}, value={}";
+    public static final String NO_SCENARIOS_FOR_HUB = "Для хаба {} сценарии не найдены";
+    public static final String CHECKING_SCENARIO = "Проверка сценария: {}";
+    public static final String CONDITION_NOT_MET = "Условие не выполнено. Датчик: {}. Тип: {}.";
+    public static final String SENSOR_NOT_IN_SNAPSHOT = "Датчик {} не найден в снапшоте";
+    public static final String SENSOR_LOG = "Датчик: {}, {}, {}, {}";
+    public static final String SENSOR_VALUE_RETRIEVAL_FAILED = "Не удалось получить значение типа {} из датчика {}";
 
-    // Предупреждения
-    public static final String WARN_CONSUMER_WOKEN = "Consumer получил сигнал wakeup, завершаем работу";
-    public static final String WARN_CONSUMER_CLOSE_ERROR = "Ошибка при закрытии CONSUMER";
+    //warm
+    public static final String OFFSET_COMMIT_ERROR = "Ошибка во время фиксации оффсетов: {}";
+    public static final String SCENARIO_NOT_FOUND = "Сценарий {} не найден в хабе {}";
+    public static final String NO_EVENT_HANDLER = "Нет обработчика для типа события: {}";
+    public static final String UNKNOWN_ACTION_TYPE = "Неизвестный тип действия '{}' для устройства {}. Команда не отправлена.";
 
-    // Отладка
-    public static final String DEBUG_OFFSET_COMMIT = "Фиксация offset-ов: max={}";
-    public static final String DEBUG_OFFSET_COMMIT_SUCCESS = "Успешная фиксация offset-ов: {}";
+    //error
+    public static final String CRITICAL_ERROR = "Критическая ошибка";
+    public static final String CONSUMER_CLOSE_ERROR = "Ошибка при закрытии consumer";
+    public static final String MESSAGE_PROCESSING_ERROR = "Ошибка обработки сообщения offset={}: {}";
+    public static final String NO_SENSOR_HANDLER = "Не найден обработчик для типа данных сенсора: {}";
+    public static final String GRPC_SEND_ERROR = "Ошибка gRPC при отправке команды устройству: {}";
 
-    // Жизненный цикл
-    public static final String INFO_CONSUMER_STOPPING = "Остановка consumer";
-    public static final String INFO_CONSUMER_STOPPED = "Consumer остановлен штатно";
+    //exception
+    public static final String SENSOR_NOT_FOUND = "Датчик не найден: %s";
+    public static final String NO_HANDLER_FOR = "Нет обработчика для %s";
 }

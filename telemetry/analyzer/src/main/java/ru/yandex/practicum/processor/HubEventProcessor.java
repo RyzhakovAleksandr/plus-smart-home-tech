@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.service.HubEventService;
 
 import java.time.Duration;
@@ -30,7 +31,7 @@ public class HubEventProcessor implements Runnable {
     @Override
     public void run() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Получен сигнал завершения, инициируем остановку...");
+            log.info(Message.SHUTDOWN_SIGNAL_RECEIVED);
             consumer.wakeup();
         }));
 
@@ -41,7 +42,7 @@ public class HubEventProcessor implements Runnable {
                 ConsumerRecords<String, HubEventAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
-                    log.debug("Обработка хаб-ивента: topic={}, partition={}, offset={}, hubId={}",
+                    log.debug(Message.PROCESSING_HUB_EVENT,
                             record.topic(), record.partition(), record.offset(), record.key());
 
                     handleHubEvent(record);
@@ -49,16 +50,15 @@ public class HubEventProcessor implements Runnable {
             }
 
         } catch (WakeupException ignored) {
-            // игнорируем - закрываем консьюмер и продюсер в блоке finally
         } catch (Exception e) {
-            log.error("Критическая ошибка", e);
+            log.error(Message.CRITICAL_ERROR, e);
 
         } finally {
             try {
                 consumer.close();
-                log.info("Consumer закрыт");
+                log.info(Message.CONSUMER_CLOSED);
             } catch (Exception e) {
-                log.error("Ошибка при закрытии consumer", e);
+                log.error(Message.CONSUMER_CLOSE_ERROR, e);
             }
         }
     }
@@ -68,7 +68,7 @@ public class HubEventProcessor implements Runnable {
             HubEventAvro event = record.value();
             hubEventService.processEvent(event);
         } catch (Exception e) {
-            log.error("Ошибка обработки сообщения offset={}: {}" , record.offset(), e.getMessage(), e);
+            log.error(Message.MESSAGE_PROCESSING_ERROR, record.offset(), e.getMessage(), e);
         }
     }
 

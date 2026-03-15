@@ -9,6 +9,7 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 import ru.yandex.practicum.mapper.EnumMapper;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Action;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
@@ -53,46 +54,39 @@ public class ScenarioAddedHandler implements HubEventHandler {
         ScenarioAddedEventAvro payload = (ScenarioAddedEventAvro) event.getPayload();
         String scenarioName = payload.getName();
 
-        log.info("Добавление сценария: hubId={}, scenarioName={}, условий={}, действий={}",
+        log.info(Message.SCENARIO_ADDING,
                 hubId, scenarioName,
                 payload.getConditions().size(),
                 payload.getActions().size());
 
-        // 1. Удаляем существующий сценарий, если он есть
         scenarioRepository.findByHubIdAndName(hubId, scenarioName)
                 .ifPresent(existing -> {
-                    log.info("Удаление существующего сценария: id={}, name={}", existing.getId(), existing.getName());
+                    log.info(Message.SCENARIO_DELETING, existing.getId(), existing.getName());
                     scenarioRepository.delete(existing);
                     scenarioRepository.flush();
                 });
 
-        // 2. Создаем новый сценарий
         Scenario scenario = Scenario.builder()
                 .hubId(hubId)
                 .name(scenarioName)
                 .build();
         scenario = scenarioRepository.save(scenario);
 
-        // 3. Сохраняем условия
         saveConditions(scenario, payload.getConditions(), hubId);
-
-        // 4. Сохраняем действия
         saveActions(scenario, payload.getActions(), hubId);
 
-        log.info("Сценарий {} успешно сохранен для хаба {}", scenarioName, hubId);
+        log.info(Message.SCENARIO_SAVED, scenarioName, hubId);
     }
 
     private void saveConditions(Scenario scenario, List<ScenarioConditionAvro> conditions, String hubId) {
         for (ScenarioConditionAvro conditionAvro : conditions) {
 
             Sensor sensor = sensorRepository.findByIdAndHubId(conditionAvro.getSensorId(), hubId)
-                    .orElseThrow(() -> new RuntimeException("Датчик не найден: " + conditionAvro.getSensorId()));
+                    .orElseThrow(() -> new RuntimeException(String.format(Message.SENSOR_NOT_FOUND, conditionAvro.getSensorId())));
 
             ConditionType type = EnumMapper.toConditionType(conditionAvro.getType());
             ConditionOperation operation = EnumMapper.toConditionOperation(conditionAvro.getOperation());
             Integer value = convertValue(conditionAvro.getValue());
-
-            // Ищем существующее условие, берем первое если есть дубликаты
             Condition condition = conditionRepository
                     .findFirstByTypeAndOperationAndValue(type.name(), operation.name(), value)
                     .orElseGet(() -> {
@@ -119,7 +113,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
 
             scenarioConditionRepository.save(scenarioCondition);
 
-            log.debug("Добавлено условие: sensor={}, type={}, operation={}, value={}",
+            log.debug(Message.CONDITION_ADDED,
                     sensor.getId(), condition.getType(), condition.getOperation(), condition.getValue());
         }
     }
@@ -137,12 +131,11 @@ public class ScenarioAddedHandler implements HubEventHandler {
         for (DeviceActionAvro actionAvro : actions) {
 
             Sensor sensor = sensorRepository.findByIdAndHubId(actionAvro.getSensorId(), hubId)
-                    .orElseThrow(() -> new RuntimeException("Датчик не найден: " + actionAvro.getSensorId()));
+                    .orElseThrow(() -> new RuntimeException(String.format(Message.SENSOR_NOT_FOUND, actionAvro.getSensorId())));
 
             ActionType type = EnumMapper.toActionType(actionAvro.getType());
             Integer value = actionAvro.getValue() != null ? actionAvro.getValue() : 0;
 
-            // Ищем существующее действие, берем первое если есть дубликаты
             Action action = actionRepository
                     .findFirstByTypeAndValueNative(type.name(), value)
                     .orElseGet(() -> {
@@ -168,7 +161,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
 
             scenarioActionRepository.save(scenarioAction);
 
-            log.debug("Добавлено действие: sensor={}, type={}, value={}",
+            log.debug(Message.ACTION_ADDED,
                     sensor.getId(), action.getType(), action.getValue());
         }
     }

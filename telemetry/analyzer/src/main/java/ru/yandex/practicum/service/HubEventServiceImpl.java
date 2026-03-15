@@ -11,6 +11,7 @@ import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.mapper.EnumMapper;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.model.ScenarioAction;
 import ru.yandex.practicum.service.handel.hub.HubEventHandler;
@@ -48,7 +49,7 @@ public class HubEventServiceImpl implements HubEventService {
         HubEventHandler handler = hubEventHandlers.get(type);
 
         if (handler == null) {
-            log.warn("Нет обработчика для типа события: {}", type);
+            log.warn(Message.NO_EVENT_HANDLER, type);
             return;
         }
 
@@ -58,22 +59,15 @@ public class HubEventServiceImpl implements HubEventService {
     @Override
     @Transactional(readOnly = true)
     public void actionExecute(List<Scenario> scenarios) {
-        System.out.println(">>> actionExecute ВЫЗВАН! Количество сценариев: " + scenarios.size());
-
-        for (Scenario scenario : scenarios) {
-            System.out.println(">>> Сценарий: " + scenario.getName() + ", HubId: " + scenario.getHubId());
-            System.out.println(">>> Действий в сценарии: " +
-                    (scenario.getActions() != null ? scenario.getActions().size() : 0));
-        }
-        log.info(">>> actionExecute вызван с {} сценариями", scenarios.size());
+        log.info(Message.ACTION_EXECUTE_CALLED, scenarios.size());
 
         if (scenarios == null || scenarios.isEmpty()) {
-            log.debug("Нет сценариев для выполнения");
+            log.debug(Message.NO_SCENARIOS_FOUND);
             return;
         }
 
         for (Scenario scenario : scenarios) {
-            log.info(">>> Обработка сценария: {} (hubId: {})", scenario.getName(), scenario.getHubId());
+            log.info(Message.PROCESSING_SCENARIO, scenario.getName(), scenario.getHubId());
 
             String hubId = scenario.getHubId();
             String name = scenario.getName();
@@ -81,7 +75,7 @@ public class HubEventServiceImpl implements HubEventService {
             List<ScenarioAction> actions = scenario.getActions();
 
             for (ScenarioAction action : actions) {
-                log.info("Действие: sensorId={}, actionType={}, value={}",
+                log.info(Message.ACTION_DETAILS,
                         action.getSensor().getId(),
                         action.getAction().getType(),
                         action.getAction().getValue());
@@ -92,16 +86,15 @@ public class HubEventServiceImpl implements HubEventService {
 
     private void sendActions(ScenarioAction action, String hubId, String name) {
         String sensorId = action.getSensor().getId();
-        String actionTypeString = action.getAction().getType().name(); // Объявляем ДО try-блока
+        String actionTypeString = action.getAction().getType().name();
         Integer value = action.getAction().getValue();
 
         try {
-            // Преобразуем строку в ActionTypeProto через маппер
             ActionTypeProto actionTypeProto = EnumMapper.toActionTypeProto(actionTypeString);
 
             DeviceActionProto deviceActionProto = DeviceActionProto.newBuilder()
                     .setSensorId(sensorId)
-                    .setType(actionTypeProto)  // Используем преобразованное значение
+                    .setType(actionTypeProto)
                     .setValue(value)
                     .build();
 
@@ -117,25 +110,15 @@ public class HubEventServiceImpl implements HubEventService {
 
             try {
                 hubRouterClient.handleDeviceAction(deviceActionRequest);
-                log.info("Команда отправлена: устройство={}, действие={}, значение={}",
+                log.info(Message.COMMAND_SENT,
                         sensorId, actionTypeString, value);
             } catch (Exception e) {
-                log.error("Ошибка gRPC при отправке команды устройству: {}", e.getMessage());
+                log.error(Message.GRPC_SEND_ERROR, e.getMessage());
                 throw e;
             }
-
-            System.out.println("=== УСПЕШНАЯ ОТПРАВКА В HUB ROUTER ===");
-            System.out.println("Хаб: " + hubId);
-            System.out.println("Сценарий: " + name);
-            System.out.println("Устройство: " + action.getSensor().getId());
-            System.out.println("Действие: " + actionTypeString);
-            System.out.println("Значение: " + value);
-            System.out.println("======================================");
-
         } catch (IllegalArgumentException e) {
-            log.warn("Неизвестный тип действия '{}' для устройства {}. Команда не отправлена.",
+            log.warn(Message.UNKNOWN_ACTION_TYPE,
                     actionTypeString, sensorId);
-            // Пропускаем отправку для неизвестных действий, продолжаем работу
         }
     }
 }

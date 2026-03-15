@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.messages.Message;
 import ru.yandex.practicum.model.Scenario;
 import ru.yandex.practicum.service.AnalyzerService;
 import ru.yandex.practicum.service.HubEventServiceImpl;
@@ -37,7 +38,7 @@ public class SnapshotProcessor {
 
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Получен сигнал завершения, инициируем остановку...");
+            log.info(Message.SHUTDOWN_SIGNAL_RECEIVED);
             consumer.wakeup();
         }));
 
@@ -45,13 +46,13 @@ public class SnapshotProcessor {
             consumer.subscribe(TOPICS);
 
             while (true) {
-                log.debug("Ожидание новых сообщений...");
+                log.debug(Message.WAITING_FOR_MESSAGES);
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
 
                 int count = 0;
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    log.debug("Обработка снепшота: topic={}, partition={}, offset={}, hubId={}",
+                    log.debug(Message.PROCESSING_SNAPSHOT,
                             record.topic(), record.partition(), record.offset(), record.key());
 
                     handleSnapshot(record);
@@ -62,17 +63,16 @@ public class SnapshotProcessor {
             }
 
         } catch (WakeupException ignored) {
-            // игнорируем - закрываем консьюмер и продюсер в блоке finally
         } catch (Exception e) {
-            log.error("Критическая ошибка", e);
+            log.error(Message.CRITICAL_ERROR, e);
 
         } finally {
             try {
                 consumer.commitSync(currentOffsets);
             } finally {
-                log.info("Закрываем консьюмер");
+                log.info(Message.CONSUMER_CLOSED);
                 consumer.close();
-                log.info("Analyzer завершил работу");
+                log.info(Message.ANALYZER_CLOSED);
             }
         }
     }
@@ -84,33 +84,23 @@ public class SnapshotProcessor {
                 new OffsetAndMetadata(record.offset() + 1)
         );
 
-        if(count % 10 == 0) {
+        if (count % 10 == 0) {
             consumer.commitAsync(currentOffsets, (offsets, exception) -> {
-                if(exception != null) {
-                    log.warn("Ошибка во время фиксации оффсетов: {}", offsets, exception);
+                if (exception != null) {
+                    log.warn(Message.OFFSET_COMMIT_ERROR, offsets, exception);
                 }
             });
         }
     }
 
     private void handleSnapshot(ConsumerRecord<String, SensorsSnapshotAvro> record) {
-        System.out.println(">>> SnapshotProcessor.handleSnapshot START");
-        System.out.println(">>> Snapshot key: " + record.key());
-        System.out.println(">>> Snapshot value: " + record.value());
-
         List<Scenario> scenariosToExecute = analyzerService.analyze(record.value());
 
-        System.out.println(">>> AnalyzerService.analyze вернул " + scenariosToExecute.size() + " сценариев");
-
         if (!scenariosToExecute.isEmpty()) {
-            log.info("Найдено {} сценариев для выполнения", scenariosToExecute.size());
-            System.out.println(">>> Вызываю hubEventService.actionExecute() с " + scenariosToExecute.size() + " сценариями");
+            log.info(Message.SCENARIOS_FOUND, scenariosToExecute.size());
             hubEventService.actionExecute(scenariosToExecute);
         } else {
-            log.info("⏭️ Нет сценариев для выполнения");
-            System.out.println(">>> Нет сценариев для выполнения");
+            log.info(Message.NO_SCENARIOS_FOUND);
         }
-
-        System.out.println(">>> SnapshotProcessor.handleSnapshot END");
     }
 }
