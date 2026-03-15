@@ -47,18 +47,18 @@ public class AggregationStarter {
 
             while (!Thread.currentThread().isInterrupted()) {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
-                int count = 0;
-                for (ConsumerRecord<String, SpecificRecordBase> record : records) {
-                    log.info(Message.LOG_PROCESS_NEXT, record.value());
-                    handleRecord(record);
-                    manageOffsets(record, count, consumer);
-                    count++;
+                int processedCount = 0;
+                for (ConsumerRecord<String, SpecificRecordBase> currentRecord : records) {
+                    log.info(Message.LOG_PROCESS_NEXT, currentRecord.value());
+                    handleRecord(currentRecord);
+                    manageOffsets(currentRecord, processedCount, consumer);
+                    processedCount++;
                 }
                 consumer.commitAsync();
             }
-        } catch (WakeupException ignores) {
-        } catch (Exception e) {
-            log.error(Message.LOG_ERROR_EVENT, e);
+        } catch (WakeupException ignoredException) {
+        } catch (Exception processingException) {
+            log.error(Message.LOG_ERROR_EVENT, processingException);
         } finally {
             try {
                 producer.flush();
@@ -94,15 +94,15 @@ public class AggregationStarter {
         }
     }
 
-    private void manageOffsets(ConsumerRecord<String, SpecificRecordBase> record, int count,
-                               Consumer<String, SpecificRecordBase> consumer) {
+    private void manageOffsets(ConsumerRecord<String, SpecificRecordBase> consumerRecord, int processedCount,
+                               Consumer<String, SpecificRecordBase> kafkaConsumer) {
         currentOffsets.put(
-                new TopicPartition(record.topic(), record.partition()),
-                new OffsetAndMetadata(record.offset() + 1)
+                new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                new OffsetAndMetadata(consumerRecord.offset() + 1)
         );
 
-        if (count % 10 == 0) {
-            consumer.commitAsync(currentOffsets, (offsets, exception) -> {
+        if (processedCount % 10 == 0) {
+            kafkaConsumer.commitAsync(currentOffsets, (offsets, exception) -> {
                 if (exception != null) {
                     log.warn(Message.LOG_OFFSET_COMMIT_ERROR, offsets, exception);
                 }

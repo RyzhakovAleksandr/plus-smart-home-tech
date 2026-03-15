@@ -13,36 +13,36 @@ import java.util.Optional;
 public class AggregationEventSnapshotImpl implements AggregationEventSnapshot {
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
-    public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
-        String hubId = event.getHubId();
+    public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro sensorEvent) {
+        String hubId = sensorEvent.getHubId();
 
         if (!snapshots.containsKey(hubId)) {
-            SensorsSnapshotAvro snapshot = createNewSnapshot(event);
+            SensorsSnapshotAvro snapshot = createNewSnapshot(sensorEvent);
 
             snapshots.put(hubId, snapshot);
 
             return Optional.of(snapshot);
         } else {
             SensorsSnapshotAvro oldSnapshot = snapshots.get(hubId);
-            Optional<SensorsSnapshotAvro> updatedSnapshotOpt = updateSnapshot(oldSnapshot, event);
+            Optional<SensorsSnapshotAvro> updatedSnapshotOpt = updateSnapshot(oldSnapshot, sensorEvent);
             updatedSnapshotOpt.ifPresent(sensorsSnapshotAvro -> snapshots.put(hubId, sensorsSnapshotAvro));
             return updatedSnapshotOpt;
         }
     }
 
-    private Optional<SensorsSnapshotAvro> updateSnapshot(SensorsSnapshotAvro oldSnapshot, SensorEventAvro event) {
-        String sensorId = event.getId();
+    private Optional<SensorsSnapshotAvro> updateSnapshot(SensorsSnapshotAvro oldSnapshot, SensorEventAvro sensorEvent) {
+        String sensorId = sensorEvent.getId();
 
         if (oldSnapshot.getSensorsState().containsKey(sensorId)) {
-            if (oldSnapshot.getSensorsState().get(sensorId).getTimestamp().isAfter(event.getTimestamp()) ||
-                    oldSnapshot.getSensorsState().get(sensorId).getData().equals(event.getPayload())) {
+            if (oldSnapshot.getSensorsState().get(sensorId).getTimestamp().isAfter(sensorEvent.getTimestamp()) ||
+                    oldSnapshot.getSensorsState().get(sensorId).getData().equals(sensorEvent.getPayload())) {
                 return Optional.empty();
             }
         }
-        SensorStateAvro sensorState = createSensorState(event);
+        SensorStateAvro sensorState = createSensorState(sensorEvent);
 
         oldSnapshot.getSensorsState().put(sensorId, sensorState);
-        oldSnapshot.setTimestamp(event.getTimestamp());
+        oldSnapshot.setTimestamp(sensorEvent.getTimestamp());
 
         return Optional.of(oldSnapshot);
     }

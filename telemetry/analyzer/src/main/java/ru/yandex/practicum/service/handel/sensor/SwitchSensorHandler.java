@@ -13,9 +13,9 @@ public class SwitchSensorHandler implements SensorEventHandler {
     }
 
     @Override
-    public Integer getValue(ConditionType type, SensorStateAvro state) {
-        SwitchSensorAvro switchSensorAvro = (SwitchSensorAvro) state.getData();
-        return switch (type) {
+    public Integer getValue(ConditionType conditionType, SensorStateAvro sensorState) {
+        SwitchSensorAvro switchSensorAvro = (SwitchSensorAvro) sensorState.getData();
+        return switch (conditionType) {
             case SWITCH -> switchSensorAvro.getState() ? 1 : 0;
             default -> 0;
         };

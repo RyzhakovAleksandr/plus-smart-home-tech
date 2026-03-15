@@ -77,15 +77,15 @@ public class SnapshotProcessor {
         }
     }
 
-    private void manageOffsets(ConsumerRecord<String, SensorsSnapshotAvro> record, int count,
-                               Consumer<String, SensorsSnapshotAvro> consumer) {
+    private void manageOffsets(ConsumerRecord<String, SensorsSnapshotAvro> consumerRecord, int processedCount,
+                               Consumer<String, SensorsSnapshotAvro> kafkaConsumer) {
         currentOffsets.put(
-                new TopicPartition(record.topic(), record.partition()),
-                new OffsetAndMetadata(record.offset() + 1)
+                new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                new OffsetAndMetadata(consumerRecord.offset() + 1)
         );
 
-        if (count % 10 == 0) {
-            consumer.commitAsync(currentOffsets, (offsets, exception) -> {
+        if (processedCount % 10 == 0) {
+            kafkaConsumer.commitAsync(currentOffsets, (offsets, exception) -> {
                 if (exception != null) {
                     log.warn(Message.OFFSET_COMMIT_ERROR, offsets, exception);
                 }
@@ -93,8 +93,8 @@ public class SnapshotProcessor {
         }
     }
 
-    private void handleSnapshot(ConsumerRecord<String, SensorsSnapshotAvro> record) {
-        List<Scenario> scenariosToExecute = analyzerService.analyze(record.value());
+    private void handleSnapshot(ConsumerRecord<String, SensorsSnapshotAvro> consumerRecord) {
+        List<Scenario> scenariosToExecute = analyzerService.analyze(consumerRecord.value());
 
         if (!scenariosToExecute.isEmpty()) {
             log.info(Message.SCENARIOS_FOUND, scenariosToExecute.size());

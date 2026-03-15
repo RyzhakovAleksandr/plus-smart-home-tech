@@ -13,9 +13,9 @@ public class MotionSensorHandler implements SensorEventHandler {
     }
 
     @Override
-    public Integer getValue(ConditionType type, SensorStateAvro state) {
-        MotionSensorAvro motionSensorAvro = (MotionSensorAvro) state.getData();
-        return switch (type) {
+    public Integer getValue(ConditionType conditionType, SensorStateAvro sensorState) {
+        MotionSensorAvro motionSensorAvro = (MotionSensorAvro) sensorState.getData();
+        return switch (conditionType) {
             case MOTION -> motionSensorAvro.getMotion() ? 1 : 0;
             default -> null;
         };

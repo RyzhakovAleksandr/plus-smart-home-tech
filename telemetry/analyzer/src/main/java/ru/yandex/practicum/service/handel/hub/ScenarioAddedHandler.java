@@ -118,12 +118,12 @@ public class ScenarioAddedHandler implements HubEventHandler {
         }
     }
 
-    private Integer convertValue(Object value) {
-        return switch (value) {
+    private Integer convertValue(Object conditionValue) {
+        return switch (conditionValue) {
             case null -> 0;
-            case Integer i -> i;
-            case Boolean b -> b ? 1 : 0;
-            default -> Integer.parseInt(value.toString());
+            case Integer intVal -> intVal;
+            case Boolean boolFlag -> boolFlag ? 1 : 0;
+            default -> Integer.parseInt(conditionValue.toString());
         };
     }
 

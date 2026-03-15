@@ -63,12 +63,12 @@ public class HubEventProcessor implements Runnable {
         }
     }
 
-    private void handleHubEvent(ConsumerRecord<String, HubEventAvro> record) {
+    private void handleHubEvent(ConsumerRecord<String, HubEventAvro> consumerRecord) {
         try {
-            HubEventAvro event = record.value();
-            hubEventService.processEvent(event);
+            HubEventAvro hubEvent = consumerRecord.value();
+            hubEventService.processEvent(hubEvent);
         } catch (Exception e) {
-            log.error(Message.MESSAGE_PROCESSING_ERROR, record.offset(), e.getMessage(), e);
+            log.error(Message.MESSAGE_PROCESSING_ERROR, consumerRecord.offset(), e.getMessage(), e);
         }
     }
 

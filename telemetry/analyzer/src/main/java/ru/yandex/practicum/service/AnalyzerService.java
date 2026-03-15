@@ -79,23 +79,23 @@ public class AnalyzerService {
 
         Map<String, SensorStateAvro> sensorStates = snapshot.getSensorsState();
 
-        SensorStateAvro state = sensorStates.get(condition.getSensor().getId());
+        SensorStateAvro sensorState = sensorStates.get(condition.getSensor().getId());
 
-        if (state == null) {
+        if (sensorState == null) {
             log.debug(Message.SENSOR_NOT_IN_SNAPSHOT, condition.getSensor().getId());
             return false;
         }
 
-        String dataType = state.getData().getClass().getName();
+        String dataType = sensorState.getData().getClass().getName();
 
-        SensorEventHandler handler = sensorEventHandlers.get(dataType);
+        SensorEventHandler eventHandler = sensorEventHandlers.get(dataType);
 
-        if (handler == null) {
+        if (eventHandler == null) {
             log.error(Message.NO_SENSOR_HANDLER, dataType);
             throw new IllegalArgumentException(String.format(Message.NO_HANDLER_FOR, dataType));
         }
 
-        Integer actualValue = handler.getValue(condition.getCondition().getType(), state);
+        Integer actualValue = eventHandler.getValue(condition.getCondition().getType(), sensorState);
 
         if (actualValue == null) {
             log.debug(Message.SENSOR_VALUE_RETRIEVAL_FAILED,

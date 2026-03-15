@@ -31,11 +31,11 @@ public class ScenarioRemovedHandler implements HubEventHandler {
         String scenarioName = payload.getName();
 
         scenarioRepository.findByHubIdAndName(hubId, scenarioName)
-                .ifPresentOrElse(scenario -> {
-                            scenarioConditionRepository.deleteByScenarioId(scenario.getId());
-                            scenarioActionRepository.deleteByScenarioId(scenario.getId());
+                .ifPresentOrElse(existingScenario -> {
+                            scenarioConditionRepository.deleteByScenarioId(existingScenario.getId());
+                            scenarioActionRepository.deleteByScenarioId(existingScenario.getId());
 
-                            scenarioRepository.delete(scenario);
+                            scenarioRepository.delete(existingScenario);
 
                             log.info(Message.SCENARIO_REMOVED, scenarioName, hubId);
                         },

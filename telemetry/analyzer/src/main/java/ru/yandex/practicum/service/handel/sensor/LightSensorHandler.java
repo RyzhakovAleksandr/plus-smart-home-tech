@@ -13,9 +13,9 @@ public class LightSensorHandler implements SensorEventHandler {
     }
 
     @Override
-    public Integer getValue(ConditionType type, SensorStateAvro state) {
-        LightSensorAvro lightSensorAvro = (LightSensorAvro) state.getData();
-        return switch (type) {
+    public Integer getValue(ConditionType conditionType, SensorStateAvro sensorState) {
+        LightSensorAvro lightSensorAvro = (LightSensorAvro) sensorState.getData();
+        return switch (conditionType) {
             case LUMINOSITY -> lightSensorAvro.getLuminosity();
             default -> null;
         };

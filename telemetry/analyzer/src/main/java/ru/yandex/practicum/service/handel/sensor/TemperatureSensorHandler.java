@@ -13,9 +13,9 @@ public class TemperatureSensorHandler implements SensorEventHandler {
     }
 
     @Override
-    public Integer getValue(ConditionType type, SensorStateAvro state) {
-        TemperatureSensorAvro temperatureSensorAvro = (TemperatureSensorAvro) state.getData();
-        return switch (type) {
+    public Integer getValue(ConditionType conditionType, SensorStateAvro sensorState) {
+        TemperatureSensorAvro temperatureSensorAvro = (TemperatureSensorAvro) sensorState.getData();
+        return switch (conditionType) {
             case TEMPERATURE -> temperatureSensorAvro.getTemperatureC();
             default -> null;
         };

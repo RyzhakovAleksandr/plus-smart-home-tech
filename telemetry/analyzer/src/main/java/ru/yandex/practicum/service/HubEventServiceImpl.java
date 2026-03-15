@@ -72,14 +72,14 @@ public class HubEventServiceImpl implements HubEventService {
             String hubId = scenario.getHubId();
             String name = scenario.getName();
 
-            List<ScenarioAction> actions = scenario.getActions();
+            List<ScenarioAction> scenarioActions = scenario.getActions();
 
-            for (ScenarioAction action : actions) {
+            for (ScenarioAction scenarioAction : scenarioActions) {
                 log.info(Message.ACTION_DETAILS,
-                        action.getSensor().getId(),
-                        action.getAction().getType(),
-                        action.getAction().getValue());
-                sendActions(action, hubId, name);
+                        scenarioAction.getSensor().getId(),
+                        scenarioAction.getAction().getType(),
+                        scenarioAction.getAction().getValue());
+                sendActions(scenarioAction, hubId, name);
             }
         }
     }
