@@ -55,7 +55,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
         log.debug(Message.UPDATING_PRODUCT, productId);
 
-        Product existingProduct = existProduct(productId);
+        Product existingProduct = findProductOrThrow(productId);
         productMapper.updateEntity(productDto, existingProduct);
 
         Product updatedProduct = productRepository.save(existingProduct);
@@ -67,7 +67,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Transactional
     public boolean deactivateProduct(UUID productId) {
         log.info(Message.DEACTIVATING_PRODUCT, productId);
-        validateProductActive(productId);
+        ensureProductIsActive(productId);
 
         int updatedRows = productRepository.deactivateProduct(productId);
         boolean success = updatedRows > 0;
@@ -83,7 +83,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
     @Override
     @Transactional
-    public boolean updateQuantityState(SetProductQuantityStateRequest request) {
+    public boolean updateProductQuantityState(SetProductQuantityStateRequest request) {
         UUID productId = request.getProductId();
         log.info(Message.UPDATING_QUANTITY_STATE, productId, request.getQuantityState());
 
@@ -105,15 +105,15 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Override
     public ProductDto getProductById(UUID productId) {
         log.debug(Message.FETCHING_PRODUCT_BY_ID, productId);
-        return productMapper.toDto(existProduct(productId));
+        return productMapper.toDto(findProductOrThrow(productId));
     }
 
-    private Product existProduct(UUID productId) {
+    private Product findProductOrThrow(UUID productId) {
         return productRepository.findByProductId(productId)
                 .orElseThrow(() -> new ProductNotFoundException(String.format(Message.PRODUCT_NOT_FOUND, productId)));
     }
 
-    private void validateProductActive(UUID productId) {
+    private void ensureProductIsActive(UUID productId) {
         if (!productRepository.existsByProductIdAndProductState(productId, ProductState.ACTIVE)) {
             log.error(Message.PRODUCT_NOT_ACTIVE, productId);
             throw new ProductNotFoundException(String.format(Message.PRODUCT_NOT_FOUND, productId));

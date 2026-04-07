@@ -4,8 +4,8 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.dto.BookedProductsDto;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.ShoppingCartResponse;
+import ru.yandex.practicum.dto.WarehouseCheckResponse;
 import ru.yandex.practicum.messages.Message;
 
 @Slf4j
@@ -15,11 +15,11 @@ public class WarehouseClientFallback {
     private final WarehouseClient warehouseClient;
 
     @CircuitBreaker(name = "warehouse", fallbackMethod = "checkProductQuantityFallback")
-    public BookedProductsDto checkProductQuantityState(ShoppingCartDto shoppingCartDto) {
-        return warehouseClient.checkProductQuantityState(shoppingCartDto);
+    public WarehouseCheckResponse checkProductQuantityState(ShoppingCartResponse shoppingCartResponse) {
+        return warehouseClient.checkProductAvailability(shoppingCartResponse);
     }
 
-    private BookedProductsDto checkProductQuantityFallback(ShoppingCartDto shoppingCartDto, Throwable throwable) {
+    private WarehouseCheckResponse checkProductQuantityFallback(ShoppingCartResponse shoppingCartResponse, Throwable throwable) {
         log.error(Message.WAREHOUSE_SERVICE_ERROR, throwable.getMessage());
         throw new RuntimeException(Message.SERVER_UNAVAILABLE);
     }

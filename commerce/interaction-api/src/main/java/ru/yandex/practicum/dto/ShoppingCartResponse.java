@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ShoppingCartDto {
+public class ShoppingCartResponse {
     @NotNull
     UUID shoppingCartId;
 

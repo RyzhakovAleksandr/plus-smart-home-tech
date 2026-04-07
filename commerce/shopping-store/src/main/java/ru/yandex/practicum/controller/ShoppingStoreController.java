@@ -35,7 +35,7 @@ public class ShoppingStoreController {
     }
 
     @PutMapping
-    public ProductDto createNewProduct(@Valid @RequestBody ProductDto productDto) {
+    public ProductDto createProduct(@Valid @RequestBody ProductDto productDto) {
         return shoppingStoreService.createProduct(productDto);
     }
 
@@ -45,7 +45,7 @@ public class ShoppingStoreController {
     }
 
     @PostMapping("/removeProductFromStore")
-    public boolean removeProductFromStore(@RequestBody UUID productId) {
+    public boolean deactivateProduct(@RequestBody UUID productId) {
         return shoppingStoreService.deactivateProduct(productId);
     }
 
@@ -56,7 +56,7 @@ public class ShoppingStoreController {
                 .productId(productId)
                 .quantityState(quantityState)
                 .build();
-        return shoppingStoreService.updateQuantityState(request);
+        return shoppingStoreService.updateProductQuantityState(request);
     }
 
     @GetMapping("/{product_id}")

@@ -3,14 +3,14 @@ package ru.yandex.practicum.service;
 import jakarta.validation.Valid;
 import ru.yandex.practicum.dto.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
-import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.WarehouseCheckResponse;
 import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.ShoppingCartResponse;
 
 public interface WarehouseService {
     void newProductInWarehouse(@Valid NewProductInWarehouseRequest request);
 
-    BookedProductsDto checkProductQuantityState(@Valid ShoppingCartDto shoppingCartDto);
+    WarehouseCheckResponse checkProductQuantityState(@Valid ShoppingCartResponse shoppingCartResponse);
 
     void addProductToWarehouse(@Valid AddProductToWarehouseRequest request);
 

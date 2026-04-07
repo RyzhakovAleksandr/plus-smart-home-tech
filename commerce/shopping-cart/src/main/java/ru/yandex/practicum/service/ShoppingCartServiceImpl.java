@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.ShoppingCartResponse;
 import ru.yandex.practicum.exceptions.NoProductsInShoppingCartException;
 import ru.yandex.practicum.exceptions.NotAuthorizedUserException;
 import ru.yandex.practicum.exceptions.ProductInShoppingCartLowQuantityInWarehouse;
@@ -33,40 +33,40 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final WarehouseClient warehouseClient;
 
     @Override
-    public ShoppingCartDto getShoppingCart(String username) {
+    public ShoppingCartResponse getShoppingCart(String username) {
         log.debug(Message.GETTING_CART, username);
         validateUsername(username);
 
-        Cart cart = createCart(username);
+        Cart cart = findOrCreateCart(username);
 
         return cartMapper.toDto(cart);
     }
 
     @Override
     @Transactional
-    public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
+    public ShoppingCartResponse addProducts(String username, Map<UUID, Long> products) {
         log.info(Message.ADDING_PRODUCTS_TO_CART, username, products);
         validateUsername(username);
 
-        Cart cart = createCart(username);
-        Cart newCart = cartRepository.save(cart);
-        ShoppingCartDto checkCart = cartMapper.toDto(newCart);
+        Cart cartToSave = findOrCreateCart(username);
+        Cart savedCart = cartRepository.save(cartToSave);
+        ShoppingCartResponse cartResponse = cartMapper.toDto(savedCart);
 
-        Map<UUID, Long> allProducts = checkCart.getProducts();
+        Map<UUID, Long> allProducts = cartResponse.getProducts();
         if (allProducts == null) {
-            checkCart.setProducts(new HashMap<>());
+            cartResponse.setProducts(new HashMap<>());
         }
 
         for (Map.Entry<UUID, Long> entry : products.entrySet()) {
             Long currentQuantity = allProducts.getOrDefault(entry.getKey(), 0L);
             allProducts.put(entry.getKey(), currentQuantity + entry.getValue());
         }
-        checkCart.setProducts(allProducts);
+        cartResponse.setProducts(allProducts);
 
-        log.info(Message.WAREHOUSE_REQUEST, checkCart.getShoppingCartId(), checkCart.getProducts());
+        log.info(Message.WAREHOUSE_REQUEST, cartResponse.getShoppingCartId(), cartResponse.getProducts());
 
         try {
-            warehouseClient.checkProductQuantityState(checkCart);
+            warehouseClient.checkProductAvailability(cartResponse);
         } catch (Exception e) {
             log.error(Message.ERROR_WAREHOUSE_CHECK, e.getMessage());
             throw new ProductInShoppingCartLowQuantityInWarehouse(
@@ -74,12 +74,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         for (Map.Entry<UUID, Long> entry : products.entrySet()) {
-            addOrUpdateCartProduct(newCart, entry.getKey(), entry.getValue());
+            addOrUpdateCartProduct(savedCart, entry.getKey(), entry.getValue());
         }
 
-        Cart savedCart = cartRepository.save(newCart);
-        log.info(Message.PRODUCTS_ADDED_SUCCESS, savedCart.getCartId(), savedCart.getProducts().size());
-        return cartMapper.toDto(savedCart);
+        Cart updatedCart = cartRepository.save(savedCart);
+        log.info(Message.PRODUCTS_ADDED_SUCCESS, updatedCart.getCartId(), updatedCart.getProducts().size());
+        return cartMapper.toDto(updatedCart);
     }
 
     @Override
@@ -98,39 +98,39 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto removeProducts(String username, List<UUID> products) {
+    public ShoppingCartResponse removeProducts(String username, List<UUID> products) {
         log.info(Message.REMOVING_PRODUCTS_FROM_CART, username, products);
         validateUsername(username);
 
-        Cart cart = findByUsernameIsActive(username);
-        int result = cartProductRepository.deleteByCartIdAndProductIds(cart.getCartId(), products);
+        Cart activeCart = findActiveCartOrThrow(username);
+        int deletedCount = cartProductRepository.deleteByCartIdAndProductIds(activeCart.getCartId(), products);
 
-        log.info(Message.PRODUCTS_REMOVED_COUNT, result);
+        log.info(Message.PRODUCTS_REMOVED_COUNT, deletedCount);
 
-        cart = cartRepository.findByCartId(cart.getCartId()).orElse(cart);
-        return cartMapper.toDto(cart);
+        Cart updatedCart = cartRepository.findByCartId(activeCart.getCartId()).orElse(activeCart);
+        return cartMapper.toDto(updatedCart);
     }
 
     @Override
     @Transactional
-    public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
+    public ShoppingCartResponse changeProductQuantity(String username, ChangeProductQuantityRequest request) {
         log.info(Message.CHANGING_PRODUCT_QUANTITY, username, request.getProductId(), request.getNewQuantity());
         validateUsername(username);
 
-        Cart cart = findByUsernameIsActive(username);
-        CartProduct cartProduct = cartProductRepository.findByCart_CartIdAndProductId(cart.getCartId(), request.getProductId())
+        Cart activeCart = findActiveCartOrThrow(username);
+        CartProduct cartItem = cartProductRepository.findByCart_CartIdAndProductId(activeCart.getCartId(), request.getProductId())
                 .orElseThrow(() -> {
                     log.error(Message.ERROR_PRODUCT_NOT_FOUND_IN_CART, request.getProductId());
                     return new NoProductsInShoppingCartException(
                             String.format(Message.PRODUCT_NOT_FOUND_IN_CART, request.getProductId()));
                 });
-        cartProduct.setQuantity(request.getNewQuantity());
-        cartProductRepository.save(cartProduct);
+        cartItem.setQuantity(request.getNewQuantity());
+        cartProductRepository.save(cartItem);
 
-        cart = cartRepository.findByCartId(cart.getCartId()).orElse(cart);
+        activeCart = cartRepository.findByCartId(activeCart.getCartId()).orElse(activeCart);
         log.info(Message.QUANTITY_CHANGED_SUCCESS);
 
-        return cartMapper.toDto(cart);
+        return cartMapper.toDto(activeCart);
     }
 
     private Cart createNewCart(String username) {
@@ -163,7 +163,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                         });
     }
 
-    private Cart createCart(String username) {
+    private Cart findOrCreateCart(String username) {
         return cartRepository.findByUsername(username)
                 .orElseGet(() -> {
                     log.info(Message.CART_NOT_EXISTS_CREATING, username);
@@ -171,7 +171,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 });
     }
 
-    private Cart findByUsernameIsActive(String username) {
+    private Cart findActiveCartOrThrow(String username) {
         return cartRepository.findByUsernameAndIsActiveTrue(username)
                 .orElseThrow(() -> {
                     log.error(Message.ERROR_CART_NOT_ACTIVE, username);

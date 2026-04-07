@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.dto.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
-import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.ShoppingCartResponse;
+import ru.yandex.practicum.dto.WarehouseCheckResponse;
 import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
-import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.service.WarehouseService;
 
 @RestController
@@ -27,7 +27,7 @@ public class WarehouseController {
     }
 
     @PostMapping("/check")
-    public BookedProductsDto checkProductQuantityState(@Valid @RequestBody ShoppingCartDto shoppingCart) {
+    public WarehouseCheckResponse checkProductQuantityState(@Valid @RequestBody ShoppingCartResponse shoppingCart) {
         return warehouseService.checkProductQuantityState(shoppingCart);
     }
 

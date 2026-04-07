@@ -3,7 +3,7 @@ package ru.yandex.practicum.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.ShoppingCartResponse;
 import ru.yandex.practicum.model.Cart;
 import ru.yandex.practicum.model.CartProduct;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public interface CartMapper {
     @Mapping(target = "shoppingCartId", source = "cartId")
     @Mapping(target = "products", source = "products", qualifiedByName = "productsToMap")
-    ShoppingCartDto toDto(Cart cart);
+    ShoppingCartResponse toDto(Cart cart);
 
     @Named("productsToMap")
     default Map<UUID, Long> productsToMap(List<CartProduct> products) {
@@ -24,7 +24,7 @@ public interface CartMapper {
             return Map.of();
         }
         return products.stream()
-                .filter(p -> p.getProductId() != null && p.getQuantity() != null)
+                .filter(cartItem -> cartItem.getProductId() != null && cartItem.getQuantity() != null)
                 .collect(Collectors.toMap(
                         CartProduct::getProductId,
                         CartProduct::getQuantity,

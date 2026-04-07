@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface WarehouseRepository extends JpaRepository<WarehouseProduct, Integer> {
+public interface WarehouseRepository extends JpaRepository<WarehouseProduct, UUID> {
     boolean existsByProductId(UUID productId);
 
     List<WarehouseProduct> findByProductIdIn(List<UUID> productIds);
