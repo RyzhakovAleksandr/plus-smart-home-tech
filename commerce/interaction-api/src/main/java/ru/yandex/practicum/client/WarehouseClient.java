@@ -14,6 +14,6 @@ public interface WarehouseClient {
     @PostMapping("/check")
     BookedProductsDto checkProductQuantityState(@Valid @RequestBody ShoppingCartDto shoppingCartDto);
 
-    @GetMapping
+    @GetMapping("/address")
     AddressDto getWarehouseAddress();
 }

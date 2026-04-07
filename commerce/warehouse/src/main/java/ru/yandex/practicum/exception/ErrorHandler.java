@@ -8,33 +8,41 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.exceptions.NoProductsInShoppingCartException;
-import ru.yandex.practicum.exceptions.NotAuthorizedUserException;
+import ru.yandex.practicum.exceptions.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exceptions.ProductNotFoundException;
+import ru.yandex.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.messages.Message;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleNotAuthorizedException(final NotAuthorizedUserException exception) {
-        log.warn(Message.HANDLER_NOT_AUTHORIZED_EXCEPTION, exception.getMessage());
-        return  getError(exception, HttpStatus.UNAUTHORIZED, "Unauthorized");
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handelNoProductInCart(final NoProductsInShoppingCartException exception) {
-        log.warn(Message.HANDLER_NO_PRODUCT_IN_CART, exception.getMessage());
-        return getError(exception, HttpStatus.BAD_REQUEST, "Bad Request");
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleProductNotFoundInWarehouse(final NoSpecifiedProductInWarehouseException exception) {
+        log.warn(Message.HANDLER_NO_PRODUCT_IN_WAREHOUSE, exception.getMessage());
+        return getError(exception, HttpStatus.NOT_FOUND, "Not Found");
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleLowQuantityInWarehouse(final ProductInShoppingCartLowQuantityInWarehouse exception) {
         log.warn(Message.HANDLER_PRODUCT_IN_WAREHOUSE_LOW, exception.getMessage());
+        return getError(exception, HttpStatus.BAD_REQUEST, "Bad Request");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleProductNotFound(final ProductNotFoundException exception) {
+        log.warn(Message.HANDLER_PRODUCT_NOT_FOUND_EXCEPTION, exception.getMessage());
+        return getError(exception, HttpStatus.NOT_FOUND, "Not Found");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleSpecifiedProductAlreadyInWarehouseException(
+            final SpecifiedProductAlreadyInWarehouseException exception) {
+        log.warn(Message.HANDLER_ALREADY_IN_WAREHOUSE, exception.getMessage());
         return getError(exception, HttpStatus.BAD_REQUEST, "Bad Request");
     }
 

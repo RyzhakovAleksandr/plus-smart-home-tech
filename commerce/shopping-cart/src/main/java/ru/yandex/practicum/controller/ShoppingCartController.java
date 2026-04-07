@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/shopping/cart")
+@RequestMapping("/api/v1/shopping-cart")
 @RequiredArgsConstructor
 public class ShoppingCartController {
 

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CartProductRepository extends JpaRepository<CartProduct, Integer> {
+public interface CartProductRepository extends JpaRepository<CartProduct, UUID> {
     @Modifying
     @Query("DELETE FROM CartProduct cp WHERE cp.cart.cartId = :cartId AND cp.productId in :productIds")
     int deleteByCartIdAndProductIds(@Param("cartId") UUID cartId,
