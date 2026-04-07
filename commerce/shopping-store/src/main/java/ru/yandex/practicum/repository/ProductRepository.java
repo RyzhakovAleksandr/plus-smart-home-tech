@@ -17,6 +17,8 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     Optional<Product> findByProductId(UUID productId);
 
+    boolean existsByProductId(UUID productId);
+
     boolean existsByProductIdAndProductState(UUID productId, ProductState productState);
 
     @Modifying

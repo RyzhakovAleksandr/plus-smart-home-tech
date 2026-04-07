@@ -87,7 +87,10 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
         UUID productId = request.getProductId();
         log.info(Message.UPDATING_QUANTITY_STATE, productId, request.getQuantityState());
 
-        validateProductActive(request.getProductId());
+        if (!productRepository.existsByProductId(productId)) {
+            throw new ProductNotFoundException(String.format(Message.PRODUCT_NOT_FOUND, productId));
+        }
+
         int updatedRows = productRepository.updateProductQuantity(productId, request.getQuantityState());
         boolean success = updatedRows > 0;
 

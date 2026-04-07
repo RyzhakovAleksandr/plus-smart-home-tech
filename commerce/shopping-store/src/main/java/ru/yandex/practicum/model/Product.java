@@ -55,7 +55,8 @@ public class Product {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_state")
-    ProductState productState;
+    @Builder.Default
+    ProductState productState = ProductState.ACTIVE;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_category")
