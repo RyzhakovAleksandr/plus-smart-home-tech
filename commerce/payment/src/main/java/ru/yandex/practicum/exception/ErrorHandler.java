@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.exceptions.NoOrderFoundException;
-import ru.yandex.practicum.exceptions.NotAuthorizedUserException;
 import ru.yandex.practicum.exceptions.NotEnoughInfoInOrderToCalculateException;
 import ru.yandex.practicum.messages.Message;
 
