@@ -6,16 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class WarehouseCheckResponse {
+public class AssemblyProductsForOrderRequest {
     @NotNull
-    Double deliveryWeight;
+    UUID orderId;
 
     @NotNull
-    Double deliveryVolume;
-
-    @NotNull
-    Boolean fragile;
+    Map<UUID, Long> products;
 }

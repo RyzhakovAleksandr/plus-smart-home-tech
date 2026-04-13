@@ -14,6 +14,14 @@ public class Message {
     public static final String PRODUCT_NOT_FOUND_IN_WAREHOUSE_ERROR = "Товар не найден на складе: %s";
     public static final String PRODUCT_QUANTITY_INSUFFICIENT_ERROR = "Товар id: %s, запрошено: %d, в наличии: %d";
     public static final String PRODUCT_QUANTITY_INSUFFICIENT = "Недостаточное количество товара на складе: %s";
+    public static final String NO_CORRECT_USERNAME_EXCEPTION = "Некорректное имя пользователя";
+    public static final String ORDER_NOT_FOUND_EXCEPTION = "Заказ не найден: %s";
+    public static final String ORDER_NOT_ASSEMBLED_EXCEPTION = "Заказ не находится в статусе ASSEMBLED. Текущий статус: %s";
+    public static final String ORDER_NO_PAYMENT_EXCEPTION = "Заказ не находится в статусе ON_PAYMENT. Текущий статус: %s";
+    public static final String ORDER_NOT_DELIVERY_STATE_EXCEPTION = "Заказ не находится в статусе ON_DELIVERY. Текущий статус: %s";
+    public static final String DELIVERY_NO_POSSIBLE_EXCEPTION = "Доставка невозможна. Заказ находиться в статусе: %s";
+    public static final String ORDER_NO_CORRECT_STATE_EXCEPTION = "Заказ не может быть завершен в статусе %s";
+    public static final String ORDER_CANT_ASSEMBLY_STATE_EXCEPTION = "Заказ не может быть собран в состоянии: %s";
 
     // Info level
     public static final String CREATING_PRODUCT = "Создание нового товара: {}";
@@ -44,6 +52,27 @@ public class Message {
     public static final String WAREHOUSE_CHECK_EMPTY_CART = "Проверка склада: корзина пуста";
     public static final String WAREHOUSE_CHECK_SUCCESS = "Проверка склада пройдена. Вес: {}, Объем: {}, Хрупкий: {}";
     public static final String GETTING_WAREHOUSE_ADDRESS = "Получение адреса склада: {}";
+    public static final String GETTING_ORDER = "Получение заказов для пользователя: {}";
+    public static final String CREATE_NEW_ORDER = "Создание нового заказа для пользователя: {}";
+    public static final String CREATED_ORDERS_OK = "Заказ создан с идентификатором: {}";
+    public static final String WORK_PAYMENT_ORDER = "Обработка платежа по заказу:  {}";
+    public static final String INITIAL_PAYMENT = "Инициирован платеж по заказу: {}";
+    public static final String RETURN_ORDER = "Оформление возврата заказа: {}";
+    public static final String CHANGE_ORDER = "Статус заказа {} изменен на {}";
+    public static final String MESSAGE_PAYMENT_OK = "Получено уведомление об успешной оплате заказа: {}";
+    public static final String MESSAGE_PAYMENT_FAULT = "Получено уведомление о неудачной оплате заказа: {}";
+    public static final String ORDER_GO_DELIVERY = "Передача заказа {} в службу доставки";
+    public static final String INFO_DELIVERY_SUCCESS = "Получено уведомление об удачной доставке заказа: {}";
+    public static final String INFO_DELIVERY_FAILED = "Получено уведомление о неудачной доставке заказа: {}";
+    public static final String DELIVERY_SUCCESS = "Заказ {} успешно доставлен";
+    public static final String DELIVERY_COMPLETE = "Завершение заказа: {}";
+    public static final String DELIVERY_COMPLETE_OK = "Заказ успешно завершен: {}";
+    public static final String CALCULATE_TOTAL_SUM = "Запрос для получения итоговой суммы заказа: {}";
+    public static final String CALCULATE_TOTAL_DELIVERY = "Запрос на получения стоимости доставки для заказа: {}";
+    public static final String ASSEMBLY_ORDER = "Сборка заказа: {}";
+    public static final String PRODUCT_ASSEMBLED = "Товар забронирован для заказа: {}";
+    public static final String PRODUCT_ADDED_TO_ORDER = "Заказ {} успешно собран";
+    public static final String PRODUCT_ADDED_TO_ORDER_FAULT = "Сборка заказа {} не удалась";
 
     // Debug level
     public static final String GETTING_CART = "Получение корзины для пользователя: {}";
@@ -57,6 +86,7 @@ public class Message {
     public static final String QUANTITY_STATE_UPDATE_FAILED = "Не удалось обновить количество товара с ID {}";
     public static final String HANDLER_PRODUCT_NOT_FOUND_EXCEPTION = "ProductNotFoundException exception: {}";
     public static final String HANDLER_ILLEGAL_ARGUMENT_EXCEPTION = "IllegalArgumentException exception: {}";
+    public static final String HANDLER_ILLEGAL_STATE_EXCEPTION = "IllegalStateException error: {}";
     public static final String HANDLER_METHOD_NOT_VALID_EXCEPTION = "MethodArgumentNotValidException exception: {}";
     public static final String HANDLER_CONSTRAINT_VIOLATION_EXCEPTION = "ConstraintViolationException exception: {}";
     public static final String HANDLER_NOT_AUTHORIZED_EXCEPTION = "NotAuthorizedException exception: {}";
@@ -65,6 +95,15 @@ public class Message {
     public static final String HANDLER_PRODUCT_IN_WAREHOUSE_LOW = "ProductInShoppingCartLowQuantityInWarehouse exception: {}";
     public static final String HANDLER_FEIGN_EXCEPTION = "FeignException exception: {}";
     public static final String HANDLER_ALREADY_IN_WAREHOUSE = "SpecifiedProductAlreadyInWarehouseException exception: {}";
+    public static final String HANDLER_NO_ORDER_FOUND = "NoOrderFoundException error: {}";
+    public static final String NO_CORRECT_USERNAME = "Некорректное имя пользователя: {}";
+    public static final String ORDER_NOT_FOUND = "Заказ не найден: {}";
+    public static final String ORDER_NOT_ASSEMBLED_STATE = "Заказ {} не находится в статусе ASSEMBLED. Текущий статус: {}";
+    public static final String ORDER_NOT_ON_PAYMENT_STATE = "Заказ {} не находится в статусе ON_PAYMENT. Текущий статус: {}";
+    public static final String ORDER_NOT_DELIVERY_STATE = "Заказ {} не находится в статусе ON_DELIVERY. Текущий статус: {}";
+    public static final String DELIVERY_NO_POSSIBLE = "Доставка невозможна. Заказ находиться в статусе: {}";
+    public static final String ORDER_NO_CORRECT_STATE = "Заказ {} не может быть завершен в статусе {}";
+    public static final String ORDER_CANT_ASSEMBLY_STATE = "Заказ не может быть собран в состоянии: {}";
 
     // Error level
     public static final String PRODUCT_NOT_ACTIVE = "Товар с ID {} неактивен";

@@ -7,9 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.ShoppingStoreClient;
 import ru.yandex.practicum.dto.AddProductToWarehouseRequest;
 import ru.yandex.practicum.dto.AddressDto;
-import ru.yandex.practicum.dto.WarehouseCheckResponse;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
-import ru.yandex.practicum.dto.ShoppingCartResponse;
 import ru.yandex.practicum.exceptions.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exceptions.ProductInShoppingCartLowQuantityInWarehouse;
 import ru.yandex.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
@@ -57,13 +57,13 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
-    public WarehouseCheckResponse checkProductQuantityState(ShoppingCartResponse shoppingCartResponse) {
-        log.debug(Message.CHECKING_WAREHOUSE_AVAILABILITY, shoppingCartResponse.getShoppingCartId());
-        Map<UUID, Long> products = shoppingCartResponse.getProducts();
+    public BookedProductsDto checkProductQuantityState(ShoppingCartDto shoppingCartDto) {
+        log.debug(Message.CHECKING_WAREHOUSE_AVAILABILITY, shoppingCartDto.getShoppingCartId());
+        Map<UUID, Long> products = shoppingCartDto.getProducts();
 
         if (products == null || products.isEmpty()) {
             log.info(Message.WAREHOUSE_CHECK_EMPTY_CART);
-            return WarehouseCheckResponse.builder()
+            return BookedProductsDto.builder()
                     .deliveryWeight(0.0)
                     .deliveryVolume(0.0)
                     .fragile(false)
@@ -110,7 +110,7 @@ public class WarehouseServiceImpl implements WarehouseService {
          }
         log.info(Message.WAREHOUSE_CHECK_SUCCESS, totalWeight,  totalVolume, hasFragile);
 
-        return WarehouseCheckResponse.builder()
+        return BookedProductsDto.builder()
                 .deliveryWeight(totalWeight)
                 .deliveryVolume(totalVolume)
                 .fragile(hasFragile)
