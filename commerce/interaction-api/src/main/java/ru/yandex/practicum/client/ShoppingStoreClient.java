@@ -5,21 +5,30 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.QuantityState;
 
+import java.util.List;
 import java.util.UUID;
 
 @FeignClient(name = "shopping-store", path = "/api/v1/shopping-store")
 public interface ShoppingStoreClient {
     @GetMapping
-    Page<ProductDto> getProducts (@RequestParam("category")ProductCategory category,
-                                  @PageableDefault(page = 0, size = 20, sort = "productName")Pageable pageable);
+    Page<ProductDto> getProductsByCategory(@RequestParam("category") ProductCategory category,
+                                           @PageableDefault(page = 0, size = 20, sort = "productName") Pageable pageable);
+
+    @GetMapping("/{productId}")
+    ProductDto getProduct(@PathVariable("productId") UUID productId);
 
     @PostMapping("/quantityState")
     boolean setProductQuantityState(@RequestParam UUID productId,
                                     @RequestParam QuantityState quantityState);
+
+    @GetMapping("/batch")
+    List<ProductDto> getProducts(@RequestBody List<UUID> productIds);
 }
