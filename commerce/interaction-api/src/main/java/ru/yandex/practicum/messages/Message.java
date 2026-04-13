@@ -28,6 +28,9 @@ public class Message {
     public static final String ORDER_NOT_HAVE_PRODUCT_EXCEPTION = "В заказе нет товаров";
     public static final String PAYMENT_NOT_FOUND_EXCEPTION = "Платеж не найден: %s";
     public static final String PAYMENT_NOT_PENDING_EXCEPTION = "Платеж не находится в состоянии PENDING";
+    public static final String DELIVERY_NOT_FOUND_EXCEPTION = "Доставка по идентификатору заказа не найдена: %s";
+    public static final String DELIVERY_NOT_CREATED_EXCEPTION = "Необходим статус доставки CREATED. Текущий статус: %s";
+    public static final String DELIVERY_NOT_IN_PROGRESS_EXCEPTION = "Необходим статус доставки IN_PROGRESS. Текущий статус: %s";
 
     // Info level
     public static final String CREATING_PRODUCT = "Создание нового товара: {}";
@@ -75,6 +78,7 @@ public class Message {
     public static final String DELIVERY_COMPLETE_OK = "Заказ успешно завершен: {}";
     public static final String CALCULATE_TOTAL_SUM = "Запрос для получения итоговой суммы заказа: {}";
     public static final String CALCULATE_TOTAL_DELIVERY = "Запрос на получения стоимости доставки для заказа: {}";
+    public static final String DELIVERY_TOTAL_SUM = "Стоимость доставки заказа {} итого: {}";
     public static final String ASSEMBLY_ORDER = "Сборка заказа: {}";
     public static final String PRODUCT_ASSEMBLED = "Товар забронирован для заказа: {}";
     public static final String PRODUCT_ADDED_TO_ORDER = "Заказ {} успешно собран";
@@ -87,6 +91,13 @@ public class Message {
     public static final String GETTING_TOTAL_SUM_ORDER = "Расчет итоговой стоимости заказа: {}";
     public static final String TOTAL_SUM_ORDER = "По заказу {} стоимость продукции: {}";
     public static final String INFO_TOTAL_SUM = "По заказу {} итоговая стоимость: product={}, delivery={}, tax={}, total={}";
+    public static final String PLANED_DELIVERY = "Планирование доставки заказа: {}";
+    public static final String CREATED_DELIVERY = "Доставка создана с идентификатором: {}";
+    public static final String CHECK_DELIVERY = "Получен запрос на доставку с указанием идентификатора доставки {}";
+    public static final String DELIVERY_STATE_IN_PROGRESS = "Статус доставки {} изменен на IN_PROGRESS";
+    public static final String DELIVERY_STATE_FAILED = "Статус доставки {} успешно изменен на FAILED";
+    public static final String DELIVERY_START_SUCCESS = "Начало обработки successfulDelivery для заказа: {}";
+    public static final String DELIVERY_FAILED = "Начало обработки failedDelivery для заказа: {}";
 
     // Debug level
     public static final String GETTING_CART = "Получение корзины для пользователя: {}";
@@ -123,6 +134,9 @@ public class Message {
     public static final String ORDER_NOT_HAVE_PRODUCT = "В заказе {} нет товаров";
     public static final String PAYMENT_NOT_FOUND = "Платеж не найден: {}";
     public static final String PAYMENT_NOT_PENDING = "Платеж {} не находится в состоянии PENDING";
+    public static final String DELIVERY_NOT_FOUND = "Доставка по идентификатору заказа {} не найдена";
+    public static final String DELIVERY_NOT_CREATED = "Необходим статус доставки CREATED. Текущий статус: {}";
+    public static final String DELIVERY_STATE_NOT_IN_PROGRESS = "Необходим статус доставки IN_PROGRESS. Текущий статус: {}";
 
     // Error level
     public static final String PRODUCT_NOT_ACTIVE = "Товар с ID {} неактивен";

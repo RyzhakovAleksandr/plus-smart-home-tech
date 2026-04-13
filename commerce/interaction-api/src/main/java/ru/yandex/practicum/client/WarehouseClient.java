@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.AssemblyProductsForOrderRequest;
+import ru.yandex.practicum.dto.ShipToDeliveryRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
 
@@ -22,10 +23,11 @@ public interface WarehouseClient {
     AddressDto getWarehouseAddress();
 
     @PostMapping("/return")
-    void acceptReturn(
-            @RequestBody Map<UUID, Long> products);
+    void acceptReturn(@RequestBody Map<UUID, Long> products);
 
     @PostMapping("/assembly")
-    BookedProductsDto assemblyProductForOrderFromShoppingCart(
-            @Valid @RequestBody AssemblyProductsForOrderRequest request);
+    BookedProductsDto assemblyProductForOrderFromShoppingCart(@Valid @RequestBody AssemblyProductsForOrderRequest request);
+
+    @PostMapping("/shipped")
+    void shippedToDelivery(@Valid @RequestBody ShipToDeliveryRequest request);
 }
