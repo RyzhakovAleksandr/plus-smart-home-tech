@@ -1,0 +1,4 @@
+grpc:
+  server:
+    port: 59092
+    insecure: true

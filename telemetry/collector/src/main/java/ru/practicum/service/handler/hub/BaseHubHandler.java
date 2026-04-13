@@ -1,6 +1,7 @@
 package ru.practicum.service.handler.hub;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
@@ -9,50 +10,84 @@ import ru.practicum.messages.Messages;
 import ru.practicum.config.KafkaConfig;
 import ru.practicum.model.hub.HubEvent;
 import ru.practicum.service.handler.KafkaEventProducer;
+import ru.practicum.service.mapper.hub.HubEventAvroMapper;
+import ru.practicum.service.mapper.hub.HubEventProtoMapper;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
+import java.time.Instant;
+
 @Slf4j
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class BaseHubHandler implements HubEventHandler {
 
     KafkaEventProducer producer;
     String topic;
+    final HubEventAvroMapper avroMapper;
+    final HubEventProtoMapper protoMapper;
 
-    public BaseHubHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig) {
+    protected abstract HubEventAvro mapHubToAvro(HubEvent hubEvent);
+    protected abstract HubEvent mapHubProtoToModel(HubEventProto hubProto);
+
+    public BaseHubHandler(KafkaEventProducer kafkaProducer, KafkaConfig kafkaConfig,  HubEventAvroMapper avroMapper, HubEventProtoMapper protoMapper) {
         this.producer = kafkaProducer;
         topic = kafkaConfig.getTopics().get("hubs-events");
+        this.avroMapper = avroMapper;
+        this.protoMapper = protoMapper;
         if (topic == null) {
             throw new IllegalArgumentException(Messages.ERROR_NOT_TOPIC_HUB);
         }
     }
 
     @Override
-    public void handle(HubEvent hubEvent) {
+    public void handle(HubEventProto hubProto) {
+        if (hubProto == null) {
+            throw new IllegalArgumentException(Messages.EXCEPTION_HUB_NOT_FOUND);
+        }
         try {
-            SpecificRecordBase payload = mapToAvro(hubEvent);
+            HubEvent event = mapHubProtoToModel(hubProto);
+            log.trace(Messages.HUB_MAP, event.getHubId());
 
-            HubEventAvro avroEvent = HubEventAvro.newBuilder()
-                    .setHubId(hubEvent.getHubId())
-                    .setTimestamp(hubEvent.getTimestamp())
-                    .setPayload(payload)
-                    .build();
+            HubEventAvro avro = mapHubToAvro(event);
+            log.trace(Messages.HUB_MAP_TO_AVRO, event.getHubId());
 
-            ProducerRecord<String, SpecificRecordBase> record =
-                    new ProducerRecord<>(
-                            topic,
-                            null,
-                            hubEvent.getTimestamp().toEpochMilli(),
-                            hubEvent.getHubId(),
-                            avroEvent
-                    );
-            producer.sendRecord(record);
-            log.debug(Messages.MESSAGE_SEND, hubEvent.getHubId());
+            sendToKafka(avro, event.getHubId(), event.getTimestamp());
 
         } catch (Exception e) {
-            log.error(Messages.ERROR_EVENT_KAFKA, hubEvent, e);
-            throw new RuntimeException(Messages.ERROR_SEND_MESSAGE, e);
+            log.error(Messages.HUB_EVENT_NOT_FOUND, hubProto.getPayloadCase(), e);
+            throw new RuntimeException(Messages.EXCEPTION_HUB_NOT_FOUND, e);
         }
     }
 
-    abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
+    protected void sendToKafka(HubEventAvro avro, String hubId, Instant timestamp) {
+        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
+                topic,
+                null,
+                timestamp.toEpochMilli(),
+                hubId,
+                avro
+        );
+
+        producer.sendRecord(record);
+        log.info(Messages.HUB_EVENT_SENT, hubId, topic);
+    }
+
+    protected HubEventAvro buildHubEventAvro(HubEvent hubEvent, SpecificRecordBase payloadAvro) {
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEvent.getHubId())
+                .setTimestamp(hubEvent.getTimestamp())
+                .setPayload(payloadAvro)
+                .build();
+    }
+
+    protected HubEvent mapBaseHubProtoFieldsToHub(HubEvent hub, HubEventProto hubProto) {
+        hub.setHubId(hubProto.getHubId());
+
+        long seconds = hubProto.getTimestamp().getSeconds();
+        int nanos = hubProto.getTimestamp().getNanos();
+
+        hub.setTimestamp(Instant.ofEpochSecond(seconds, nanos));
+        return hub;
+    }
 }
