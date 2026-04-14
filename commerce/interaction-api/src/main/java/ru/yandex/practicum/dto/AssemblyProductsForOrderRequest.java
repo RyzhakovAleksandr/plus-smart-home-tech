@@ -1,5 +1,6 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,6 +17,6 @@ public class AssemblyProductsForOrderRequest {
     @NotNull
     UUID orderId;
 
-    @NotNull
+    @NotEmpty
     Map<UUID, Long> products;
 }

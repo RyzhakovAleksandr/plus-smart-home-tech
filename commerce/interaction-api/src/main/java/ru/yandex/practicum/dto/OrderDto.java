@@ -21,7 +21,6 @@ public class OrderDto {
 
     UUID shoppingCartId;
 
-    @NotNull
     @NotEmpty
     Map<UUID, @Positive Long> products;
 
