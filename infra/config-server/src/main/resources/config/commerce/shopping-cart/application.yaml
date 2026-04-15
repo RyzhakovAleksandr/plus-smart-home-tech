@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/commerce
+    url: jdbc:postgresql://localhost:5432/shopping_cart
     username: username
     password: password
     driver-class-name: org.postgresql.Driver

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.WarehouseClient;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.ShoppingCartResponse;
+import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.exceptions.NoProductsInShoppingCartException;
 import ru.yandex.practicum.exceptions.NotAuthorizedUserException;
 import ru.yandex.practicum.exceptions.ProductInShoppingCartLowQuantityInWarehouse;
@@ -33,7 +33,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final WarehouseClient warehouseClient;
 
     @Override
-    public ShoppingCartResponse getShoppingCart(String username) {
+    public ShoppingCartDto getShoppingCart(String username) {
         log.debug(Message.GETTING_CART, username);
         validateUsername(username);
 
@@ -44,13 +44,13 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartResponse addProducts(String username, Map<UUID, Long> products) {
+    public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
         log.info(Message.ADDING_PRODUCTS_TO_CART, username, products);
         validateUsername(username);
 
         Cart cartToSave = findOrCreateCart(username);
         Cart savedCart = cartRepository.save(cartToSave);
-        ShoppingCartResponse cartResponse = cartMapper.toDto(savedCart);
+        ShoppingCartDto cartResponse = cartMapper.toDto(savedCart);
 
         Map<UUID, Long> allProducts = cartResponse.getProducts();
         if (allProducts == null) {
@@ -98,7 +98,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartResponse removeProducts(String username, List<UUID> products) {
+    public ShoppingCartDto removeProducts(String username, List<UUID> products) {
         log.info(Message.REMOVING_PRODUCTS_FROM_CART, username, products);
         validateUsername(username);
 
@@ -113,7 +113,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartResponse changeProductQuantity(String username, ChangeProductQuantityRequest request) {
+    public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
         log.info(Message.CHANGING_PRODUCT_QUANTITY, username, request.getProductId(), request.getNewQuantity());
         validateUsername(username);
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.ShoppingCartResponse;
+import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.service.ShoppingCartService;
 
 import java.util.List;
@@ -28,13 +28,13 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @GetMapping
-    public ShoppingCartResponse getShoppingCart(@RequestParam String username) {
+    public ShoppingCartDto getShoppingCart(@RequestParam String username) {
         return shoppingCartService.getShoppingCart(username);
     }
 
     @PutMapping
-    public ShoppingCartResponse addProductToShoppingCart(@RequestParam String username,
-                                                         @RequestBody Map<UUID, Long> products) {
+    public ShoppingCartDto addProductToShoppingCart(@RequestParam String username,
+                                                    @RequestBody Map<UUID, Long> products) {
         return shoppingCartService.addProducts(username, products);
     }
 
@@ -44,14 +44,14 @@ public class ShoppingCartController {
     }
 
     @PostMapping("/remove")
-    public ShoppingCartResponse removeFromShoppingCart(@RequestParam String username,
-                                                       @RequestBody List<UUID> products) {
+    public ShoppingCartDto removeFromShoppingCart(@RequestParam String username,
+                                                  @RequestBody List<UUID> products) {
         return shoppingCartService.removeProducts(username, products);
     }
 
     @PostMapping("/change-quantity")
-    public ShoppingCartResponse changeProductQuantity(@RequestParam String username,
-                                                      @Valid @RequestBody ChangeProductQuantityRequest request) {
+    public ShoppingCartDto changeProductQuantity(@RequestParam String username,
+                                                 @Valid @RequestBody ChangeProductQuantityRequest request) {
         return shoppingCartService.changeProductQuantity(username, request);
     }
 }
